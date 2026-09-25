@@ -6,7 +6,7 @@ local StudButton = require(script.Parent.Parent.Components.StudButton)
 
 local controls = {
 	Text = "BELI!",
-	Variant = "Primary", -- Primary / Secondary / Danger / Gold / Slot
+	Variant = "Green", -- nama palette (Green, Blue, Red, Orange, Gold, Purple, Pink, Cyan, Teal, ...) atau role (Primary, Danger, ...)
 	WithIcon = true,
 	Disabled = false,
 }

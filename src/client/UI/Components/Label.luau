@@ -40,7 +40,7 @@ return function(scope: any, props: Props): Instance
 
 		[Children] = {
 			scope:New("UIStroke")({
-				Color = Theme.Colors.Outline,
+				Color = Theme.Colors.TextStroke,
 				Thickness = Theme.Sizes.TextStroke,
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
 				LineJoinMode = Enum.LineJoinMode.Round,

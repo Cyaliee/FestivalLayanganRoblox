@@ -43,14 +43,14 @@ return function(scope: any, props: Props): Instance
 			scope:New("Frame")({
 				Name = "StatusPanel",
 				Position = UDim2.fromOffset(Sizes.ScreenMargin, Sizes.ScreenMargin),
-				Size = UDim2.fromOffset(Sizes.PillWidth + 60, 320),
+				Size = UDim2.fromOffset(Sizes.PillWidth + 60, 360),
 				BackgroundTransparency = 1,
 
 				[Children] = {
 					scope:New("UIScale")({ Scale = props.Scale or 1 }),
 					scope:New("UIListLayout")({
 						SortOrder = Enum.SortOrder.LayoutOrder,
-						Padding = UDim.new(0, 10),
+						Padding = UDim.new(0, 10 + Sizes.ShadowOffset),
 					}),
 
 					-- Level badge + EXP bar
@@ -72,7 +72,7 @@ return function(scope: any, props: Props): Instance
 								Name = "LevelBadge",
 								Size = UDim2.fromOffset(BADGE_SIZE, BADGE_SIZE),
 								CornerRadius = UDim.new(1, 0),
-								Palette = Theme.Palettes.Gold,
+								Palette = "Level",
 								Padding = 8,
 								ZIndex = 2,
 								Content = {
@@ -80,7 +80,7 @@ return function(scope: any, props: Props): Instance
 										Name = "LevelText",
 										Text = props.LevelText,
 										Font = Theme.TitleFont,
-										ZIndex = 2,
+										ZIndex = 3,
 									}),
 								},
 							}),
@@ -91,25 +91,30 @@ return function(scope: any, props: Props): Instance
 						Name = "CoinText",
 						Icon = UIAssets.Icons.Coin,
 						Text = props.CoinsText,
+						Palette = "Coin",
 						LayoutOrder = 2,
 					}),
 					StatPill(scope, {
 						Name = "BambooText",
 						Icon = UIAssets.Icons.Bamboo,
 						Text = props.BambooText,
+						Palette = "Bamboo",
 						LayoutOrder = 3,
 					}),
 					StatPill(scope, {
 						Name = "KiteText",
 						Icon = UIAssets.Icons.Kite,
 						Text = props.KiteText,
+						Palette = "Kite",
 						LayoutOrder = 4,
 					}),
 					StatPill(scope, {
 						Name = "BagText",
 						Icon = UIAssets.Icons.Bag,
 						Text = props.BagText,
-						Warning = props.BagFull,
+						Palette = scope:Computed(function(use)
+							return if use(props.BagFull) then "BagFull" else "Bag"
+						end),
 						LayoutOrder = 5,
 					}),
 				},

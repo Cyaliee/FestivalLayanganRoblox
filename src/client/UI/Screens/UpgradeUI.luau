@@ -31,6 +31,7 @@ return function(scope: any, props: Props): Instance
 	return Window(scope, {
 		Name = "UpgradeUI",
 		Title = UIText.UpgradeTitle,
+		Palette = "UpgradeWindow",
 		Open = props.Open,
 		OnClose = props.OnClose,
 		Scale = props.Scale,

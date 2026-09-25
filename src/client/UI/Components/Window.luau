@@ -1,11 +1,16 @@
 --!strict
--- Jendela modal: muncul dengan efek "pop", judul di atas, tombol tutup merah.
+--[[
+	Jendela modal gaya Studded (seperti menu di kit StuddedUI):
+	badan putih dengan stud tipis, header berwarna dengan stud, tombol X merah di header,
+	outline & bayangan warna gelap dari palette. Muncul dengan efek "pop".
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
-local Panel = require(script.Parent.Panel)
+local Style = require(script.Parent.Parent.Style)
+local Block = require(script.Parent.Block)
 local Label = require(script.Parent.Label)
 local StudButton = require(script.Parent.StudButton)
 
@@ -15,6 +20,7 @@ local Anim = Theme.Animation
 export type Props = {
 	Name: string,
 	Title: any,
+	Palette: any?, -- warna header/outline (nama palette/role). Default "Secondary"
 	Open: any, -- boolean (state)
 	OnClose: () -> (),
 	Size: UDim2,
@@ -22,10 +28,11 @@ export type Props = {
 	Content: { any },
 }
 
-local TITLE_HEIGHT = 50
-local CLOSE_SIZE = 50
+local HEADER_HEIGHT = 64
+local CLOSE_SIZE = 44
 
 return function(scope: any, props: Props): Instance
+	local accent = props.Palette or "Secondary"
 	local isOpen = scope:Computed(function(use)
 		return use(props.Open) == true
 	end)
@@ -57,46 +64,53 @@ return function(scope: any, props: Props): Instance
 				end),
 				Active = true,
 			}),
-			Panel(scope, {
+			Block(scope, {
 				Name = "Frame",
 				Size = props.Size,
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),
+				Palette = accent,
+				SurfaceColor = Theme.Palettes.White.Surface,
+				CornerRadius = Theme.Sizes.PanelCorner,
+				Studs = Theme.Studs.PanelTransparency,
+				Scale = scope:Computed(function(use)
+					return math.max(use(pop), 0.001) * (use(props.Scale) or 1)
+				end),
 				Content = {
-					scope:New("UIScale")({
-						Scale = scope:Computed(function(use)
-							return math.max(use(pop), 0.001) * (use(props.Scale) or 1)
-						end),
-					}),
-					Panel(scope, {
-						Name = "TitleBar",
-						Size = UDim2.new(0.65, 0, 0, TITLE_HEIGHT),
-						AnchorPoint = Vector2.new(0.5, 0.5),
-						Position = UDim2.fromScale(0.5, 0),
-						Palette = Theme.Palettes.Secondary,
-						Padding = 6,
+					Block(scope, {
+						Name = "Top",
+						Size = UDim2.new(1, 0, 0, HEADER_HEIGHT),
+						Palette = accent,
+						CornerRadius = Theme.Sizes.PanelCorner,
+						Shadow = false,
 						Content = {
 							Label(scope, {
 								Name = "Title",
 								Text = props.Title,
 								Font = Theme.TitleFont,
+								Size = UDim2.new(0.75, 0, 0.6, 0),
+								Position = UDim2.fromScale(0.5, 0.5),
+								AnchorPoint = Vector2.new(0.5, 0.5),
+								MaxTextSize = 40,
+								ZIndex = 3,
+							}),
+							StudButton(scope, {
+								Name = "CloseButton",
+								Size = UDim2.fromOffset(CLOSE_SIZE, CLOSE_SIZE),
+								AnchorPoint = Vector2.new(1, 0.5),
+								Position = UDim2.new(1, -12, 0.5, -2),
+								Variant = "Danger",
+								Icon = UIAssets.Icons.Close,
+								OnActivated = props.OnClose,
 							}),
 						},
 					}),
-					StudButton(scope, {
-						Name = "CloseButton",
-						Size = UDim2.fromOffset(CLOSE_SIZE, CLOSE_SIZE),
-						AnchorPoint = Vector2.new(0.5, 0.5),
-						Position = UDim2.new(1, -8, 0, 8),
-						Variant = "Danger",
-						Icon = UIAssets.Icons.Close,
-						OnActivated = props.OnClose,
-					}),
 					scope:New("Frame")({
-						Name = "Body",
-						Size = UDim2.new(1, 0, 1, -TITLE_HEIGHT / 2),
-						Position = UDim2.fromOffset(0, TITLE_HEIGHT / 2),
+						Name = "Container",
+						Size = UDim2.new(1, 0, 1, -HEADER_HEIGHT),
+						Position = UDim2.fromOffset(0, HEADER_HEIGHT),
 						BackgroundTransparency = 1,
+						ZIndex = 3,
 						[Children] = props.Content,
 					}),
 				},

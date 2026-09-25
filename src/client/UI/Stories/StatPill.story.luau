@@ -7,7 +7,7 @@ local StatPill = require(script.Parent.Parent.Components.StatPill)
 
 local controls = {
 	Coins = 1250,
-	Warning = false,
+	Palette = "Coin", -- nama palette/role: Coin, Bamboo, Kite, Bag, BagFull, Red, Blue, ...
 }
 
 return {
@@ -20,7 +20,7 @@ return {
 			Text = scope:Computed(function(use)
 				return Format.number(use(props.controls.Coins))
 			end),
-			Warning = props.controls.Warning,
+			Palette = props.controls.Palette,
 			Position = UDim2.fromOffset(40, 40),
 		})
 		pill.Parent = props.target

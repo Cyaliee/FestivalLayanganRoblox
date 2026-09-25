@@ -1,10 +1,11 @@
 --!strict
--- Bar progress (EXP, dll). Fill bergerak halus dengan Spring.
+-- Bar progress (EXP, dll) gaya Studded. Fill bergerak halus dengan Spring.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local Style = require(script.Parent.Parent.Style)
+local Block = require(script.Parent.Block)
 local Label = require(script.Parent.Label)
 
 local Children = Fusion.Children
@@ -17,8 +18,11 @@ export type Props = {
 	LayoutOrder: number?,
 	Progress: any, -- 0..1 (boleh state)
 	Text: any?,
-	Palette: any?, -- default Theme.Palettes.Exp
+	Palette: any?, -- warna isi, default role "Exp"
+	TrackPalette: any?, -- warna track, default role "ExpTrack"
 }
+
+local ROUND = UDim.new(1, 0)
 
 return function(scope: any, props: Props): Instance
 	local progress = scope:Spring(
@@ -28,18 +32,18 @@ return function(scope: any, props: Props): Instance
 		Theme.Animation.BarSpeed,
 		Theme.Animation.BarDamping
 	)
+	local fill = Style.palette(props.Palette or "Exp")
 
-	return scope:New("Frame")({
+	return Block(scope, {
 		Name = props.Name or "ProgressBar",
 		Size = props.Size or UDim2.fromOffset(200, 28),
 		Position = props.Position,
 		AnchorPoint = props.AnchorPoint,
 		LayoutOrder = props.LayoutOrder,
-		BackgroundColor3 = Theme.Colors.Track,
-
-		[Children] = Style.children(
-			Style.corner(scope, UDim.new(1, 0)),
-			Style.outline(scope),
+		Palette = props.TrackPalette or "ExpTrack",
+		CornerRadius = ROUND,
+		Studs = false,
+		Content = Style.children(
 			scope:New("Frame")({
 				Name = "Fill",
 				Size = scope:Computed(function(use)
@@ -48,10 +52,10 @@ return function(scope: any, props: Props): Instance
 				Visible = scope:Computed(function(use)
 					return use(progress) > 0.01
 				end),
-				BackgroundColor3 = Color3.new(1, 1, 1),
+				BackgroundColor3 = fill.Surface,
 				[Children] = {
-					Style.corner(scope, UDim.new(1, 0)),
-					Style.gradient(scope, props.Palette or Theme.Palettes.Exp),
+					Style.corner(scope, ROUND),
+					Style.studs(scope, Theme.Studs.ButtonTransparency, ROUND),
 				},
 			}),
 			props.Text and Label(scope, {
@@ -60,7 +64,7 @@ return function(scope: any, props: Props): Instance
 				Size = UDim2.fromScale(1, 0.8),
 				Position = UDim2.fromScale(0.5, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5),
-				ZIndex = 2,
+				ZIndex = 3,
 			})
 		),
 	})

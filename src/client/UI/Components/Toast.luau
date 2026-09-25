@@ -3,7 +3,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
-local Panel = require(script.Parent.Panel)
+local Block = require(script.Parent.Block)
 local Label = require(script.Parent.Label)
 
 local Anim = Theme.Animation
@@ -24,20 +24,22 @@ return function(scope: any, props: Props): Instance
 		Anim.ToastDamping
 	)
 
-	return Panel(scope, {
+	return Block(scope, {
 		Name = "Notification",
 		Size = UDim2.fromOffset(Theme.Sizes.ToastWidth, Theme.Sizes.ToastHeight),
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = scope:Computed(function(use)
 			return UDim2.new(0.5, 0, 0, use(y))
 		end),
-		Palette = props.Palette or Theme.Palettes.Gold,
+		CornerRadius = Theme.Sizes.PanelCorner,
+		Palette = props.Palette or "Toast",
+		Scale = props.Scale,
 		Padding = 8,
 		Content = {
-			scope:New("UIScale")({ Scale = props.Scale or 1 }),
 			Label(scope, {
 				Name = "MessageText",
 				Text = props.Text,
+				ZIndex = 3,
 			}),
 		},
 	})

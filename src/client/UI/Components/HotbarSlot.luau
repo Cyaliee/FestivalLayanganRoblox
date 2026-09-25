@@ -25,13 +25,13 @@ return function(scope: any, props: Props): Instance
 
 	return StudButton(scope, {
 		Name = "Slot" .. props.KeyText,
-		Size = UDim2.fromOffset(Theme.Sizes.SlotSize, Theme.Sizes.SlotSize + Theme.Sizes.ShadowOffset),
+		Size = UDim2.fromOffset(Theme.Sizes.SlotSize, Theme.Sizes.SlotSize),
 		LayoutOrder = props.LayoutOrder,
 		Variant = scope:Computed(function(use)
 			if use(isEmpty) then
 				return "SlotEmpty"
 			end
-			return if use(props.Selected) then "Gold" else "Slot"
+			return if use(props.Selected) then "SlotSelected" else "Slot"
 		end),
 		Selected = props.Selected,
 		Disabled = false,
@@ -51,8 +51,8 @@ return function(scope: any, props: Props): Instance
 				Name = "KeyLabel",
 				Text = props.KeyText,
 				Size = UDim2.fromScale(0.3, 0.3),
-				Position = UDim2.fromOffset(4, 2),
-				ZIndex = 2,
+				Position = UDim2.fromOffset(-2, -4),
+				ZIndex = 3,
 			}),
 			Label(scope, {
 				Name = "Count",
@@ -61,10 +61,10 @@ return function(scope: any, props: Props): Instance
 					return if item and item.Count > 1 then Format.number(item.Count) else ""
 				end),
 				Size = UDim2.fromScale(0.7, 0.32),
-				Position = UDim2.new(1, -4, 1, -2),
+				Position = UDim2.new(1, 2, 1, 2),
 				AnchorPoint = Vector2.new(1, 1),
 				TextXAlignment = Enum.TextXAlignment.Right,
-				ZIndex = 2,
+				ZIndex = 3,
 			}),
 		},
 	})

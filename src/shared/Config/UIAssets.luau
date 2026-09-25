@@ -4,8 +4,8 @@
 	Image  = asset id, mis. "rbxassetid://1234567890". Kosong ("") = pakai Fallback.
 	Fallback = teks/emoji yang tampil selama Image masih kosong.
 
-	Buttons: skin ImageButton per varian tombol. Kosong = tombol digambar kode
-	(gradient + outline). Kalau diisi, gambar dipakai sebagai skin tombol dan
+	Buttons: skin ImageButton per warna tombol (opsional). Kosong = tombol digambar kode
+	(gaya Studded: warna solid + stud + outline + bayangan). Kalau diisi, gambar dipakai sebagai skin tombol dan
 	SliceCenter (opsional) dipakai untuk 9-slice supaya tidak gepeng.
 ]]
 
@@ -31,15 +31,8 @@ local Items: { [string]: IconAsset } = {
 	KiteNaga = { Image = "", Fallback = "🐉" },
 }
 
--- Key = nama palette tombol di UITheme.Palettes (Primary, Secondary, Danger, Gold, Slot, ...)
-local Buttons: { [string]: ButtonSkin } = {
-	Primary = { Image = "" },
-	Secondary = { Image = "" },
-	Danger = { Image = "" },
-	Gold = { Image = "" },
-	Slot = { Image = "" },
-	SlotEmpty = { Image = "" },
-}
+-- Key = nama palette di UITheme.Palettes (Green, Blue, Close, Orange, ...). Kosong = gaya Studded dari kode.
+local Buttons: { [string]: ButtonSkin } = {}
 
 return table.freeze({
 	Icons = table.freeze(Icons),
