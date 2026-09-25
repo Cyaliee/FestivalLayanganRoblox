@@ -44,16 +44,8 @@ local function setupPrompt(plotModel: Model, sign: Instance): ProximityPrompt?
 	return p
 end
 
--- Custom hook: true hanya di frame pertama system ini jalan.
--- (useHookState wajib dipanggil dari dalam hook, bukan langsung dari system)
-local function useFirstRun(): boolean
-	local storage = Matter.useHookState()
-	if storage.done then
-		return false
-	end
-	storage.done = true
-	return true
-end
+-- World yang sudah di-scan awal (tidak pakai useHookState: fungsi hook lokal bisa di-inline Luau)
+local scannedWorlds: { [any]: boolean } = setmetatable({}, { __mode = "k" }) :: any
 
 local function registerPlot(world, plotModel: Instance)
 	if not plotModel:IsA("Model") then
@@ -110,7 +102,8 @@ local function registerPlots(world)
 		return
 	end
 
-	if useFirstRun() then
+	if not scannedWorlds[world] then
+		scannedWorlds[world] = true
 		for _, child in folder:GetChildren() do
 			registerPlot(world, child)
 		end
