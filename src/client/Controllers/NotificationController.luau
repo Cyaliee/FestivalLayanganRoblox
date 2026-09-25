@@ -1,5 +1,6 @@
 --!strict
--- Tampilkan notifikasi dari server di HUD/Notification (TextLabel buatan Studio).
+-- Tampilkan notifikasi dari server di HUD/Notification (buatan Studio).
+-- Notification = TextLabel, atau Frame/ImageLabel yang berisi TextLabel "MessageText".
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
@@ -29,11 +30,22 @@ end
 
 function NotificationController.start()
 	task.spawn(function()
-		local label = UIRef.findOfClass(UIRef.screen("HUD"), "Notification", "TextLabel")
+		local root = UIRef.findOfClass(UIRef.screen("HUD"), "Notification", "GuiObject")
+		if root == nil then
+			return
+		end
+
+		-- Notification boleh TextLabel langsung, atau Frame/ImageLabel berisi TextLabel "MessageText"
+		local label = if root:IsA("TextLabel")
+			then root
+			else UIRef.findOfClass(root, "MessageText", "TextLabel")
+
+		scope:Hydrate(root)({
+			Visible = visible,
+		})
 		if label then
 			scope:Hydrate(label)({
 				Text = text,
-				Visible = visible,
 			})
 		end
 	end)

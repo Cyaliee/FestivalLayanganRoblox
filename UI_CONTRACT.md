@@ -24,7 +24,8 @@ Game tetap jalan; binding elemen itu saja yang dilewati.
 ### HUD (ScreenGui)
 | Path | Tipe | Dipakai untuk | Fase |
 |---|---|---|---|
-| `Notification` | TextLabel | Teks notifikasi ("Tas Penuh!", "Kavling berhasil diklaim!"). `Text` & `Visible` diatur kode | 1 |
+| `Notification` | TextLabel **atau** Frame/ImageLabel | Kotak notifikasi ("Tas Penuh!", "Kavling berhasil diklaim!"). `Visible` diatur kode | 1 |
+| `Notification/MessageText` | TextLabel | Teks notifikasi. **Hanya perlu kalau `Notification` berupa Frame/ImageLabel**. Kalau `Notification` sendiri TextLabel, `Text`-nya langsung diisi | 1 |
 | `StatusPanel/LevelText` | TextLabel | Level pemain | 2 |
 | `StatusPanel/ExpBar/Fill` | GuiObject | `Size` X-scale = progress EXP | 2 |
 | `StatusPanel/CoinText` | TextLabel | Koin | 2 |
