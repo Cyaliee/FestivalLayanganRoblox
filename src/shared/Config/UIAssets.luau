@@ -13,24 +13,24 @@ end
 
 local Icons: { [string]: IconAsset } = {
 	-- Sidebar
-	Shop = icon("Shop"),
-	Inventory = icon("Inv"),
-	Settings = icon("Set"),
-	Info = icon("Info"),
+	Shop = icon("Shop", "rbxassetid://96765539210233"),
+	Inventory = icon("Inv", "rbxassetid://94803830058788"),
+	Settings = icon("Set", "rbxassetid://72356111318001"),
+	Info = icon("Info", "rbxassetid://137886927286330"),
 	-- Tombol panah (sidebar & hotbar toggle)
-	ArrowLeft = icon("<"),
-	ArrowRight = icon(">"),
-	ArrowDown = icon("v"),
-	ArrowUp = icon("^"),
-	Close = icon("X"),
+	ArrowLeft = icon("<", "rbxassetid://81346262937714"),
+	ArrowRight = icon(">", "rbxassetid://81538393870915"),
+	ArrowDown = icon("v", "rbxassetid://95589229542680"),
+	ArrowUp = icon("^", "rbxassetid://95589229542680"),
+	Close = icon("X", "rbxassetid://100108698877198"),
 	-- Umum
-	Coin = icon("Rp"),
-	Wallet = icon("Rp"),
-	Bag = icon("Tas"),
-	Upgrade = icon("Up"),
-	Clock = icon("s"),
-	Lock = icon("Lock"),
-	Booster = icon("Emas"),
+	Coin = icon("Rp", "rbxassetid://73686977787804"),
+	Wallet = icon("Rp", "rbxassetid://108077675842571"),
+	Bag = icon("Tas", "rbxassetid://94803830058788"),
+	Upgrade = icon("Up", "rbxassetid://123693986624013"),
+	Clock = icon("s", "rbxassetid://95864835539413"),
+	Lock = icon("Lock", "rbxassetid://89397223903966"),
+	Booster = icon("Emas", "rbxassetid://124732414241856"),
 }
 
 -- Ikon per item. Key = Id di Config/Items (semua rarity pakai ikon yang sama, warna bingkai beda).
