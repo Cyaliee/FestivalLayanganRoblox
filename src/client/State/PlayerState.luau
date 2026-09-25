@@ -22,6 +22,8 @@ PlayerState.Inventory = scope:Value(defaults.Inventory)
 PlayerState.ActiveCraftRecipe = scope:Value("") -- "" = meja kosong
 PlayerState.ActiveCraftEndsAt = scope:Value(0) -- waktu server (GetServerTimeNow)
 PlayerState.PlacedDragon = scope:Value("") -- item key naga yang terpasang, "" = tidak ada
+PlayerState.Hotbar = scope:Value(defaults.Hotbar) -- item key yang dipasang ke hotbar (urut)
+PlayerState.Settings = scope:Value(defaults.Settings)
 
 PlayerState.view = PlayerView.derive(scope, PlayerState)
 
@@ -49,6 +51,18 @@ function PlayerState.apply(snapshot: any)
 	end
 	if type(snapshot.PlacedDragon) == "string" then
 		PlayerState.PlacedDragon:set(snapshot.PlacedDragon)
+	end
+	if type(snapshot.Hotbar) == "table" then
+		local hotbar = {}
+		for _, key in snapshot.Hotbar do
+			if ItemKey.isValid(key) then
+				table.insert(hotbar, key)
+			end
+		end
+		PlayerState.Hotbar:set(hotbar)
+	end
+	if type(snapshot.Settings) == "table" then
+		PlayerState.Settings:set(table.clone(snapshot.Settings))
 	end
 
 	if type(snapshot.Inventory) == "table" then

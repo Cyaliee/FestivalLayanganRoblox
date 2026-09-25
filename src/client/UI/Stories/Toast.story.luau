@@ -1,7 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local Toast = require(script.Parent.Parent.Components.Toast)
+local UI = script.Parent.Parent
+local Toast = require(UI.Components.Toast)
 
 local controls = {
 	Text = "Tas Penuh!",
@@ -12,10 +13,7 @@ return {
 	fusion = Fusion,
 	controls = controls,
 	story = function(props)
-		local toast = Toast(props.scope, {
-			Text = props.controls.Text,
-			Visible = props.controls.Visible,
-		})
+		local toast = Toast(props.scope, { Text = props.controls.Text, Visible = props.controls.Visible })
 		toast.Parent = props.target
 	end,
 }

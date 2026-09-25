@@ -13,6 +13,8 @@ return table.freeze({
 		RequestTrade = "RequestTrade", -- client -> server: { ShopId, ItemKey, Mode: "One"|"Bulk"|"All" }
 		RequestCraft = "RequestCraft", -- client -> server: { RecipeId, UseBooster: boolean }
 		RequestTableUpgrade = "RequestTableUpgrade", -- client -> server: intent upgrade meja (tanpa data)
+		RequestHotbarToggle = "RequestHotbarToggle", -- client -> server: { Key } pasang/lepas item di hotbar
+		RequestSetting = "RequestSetting", -- client -> server: { Key, Value } ubah pengaturan
 		Announce = "Announce", -- server -> semua client: { Text: string, Palette: string? } pengumuman global
 	}),
 
@@ -28,6 +30,8 @@ return table.freeze({
 		ShopPrompt = table.freeze({ Max = 3, Window = 2 }),
 		CraftPrompt = table.freeze({ Max = 3, Window = 2 }),
 		DragonPrompt = table.freeze({ Max = 2, Window = 2 }),
+		HotbarToggle = table.freeze({ Max = 10, Window = 2 }),
+		Setting = table.freeze({ Max = 10, Window = 2 }),
 	}),
 
 	-- Seberapa sering server cek perubahan data untuk dikirim ke client (detik)

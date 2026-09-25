@@ -12,7 +12,7 @@ export type Tier = {
 	Weight: number,
 	BoostedWeight: number, -- peluang saat pakai Bambu Emas sebagai booster
 	Multiplier: number,
-	Palette: string, -- warna slot/label (UITheme.Palettes)
+	Palette: string, -- nama warna (tidak dipakai UI gelap; warna pakai Color)
 	Color: Color3, -- warna layangan placeholder & teks
 	Rank: number,
 }

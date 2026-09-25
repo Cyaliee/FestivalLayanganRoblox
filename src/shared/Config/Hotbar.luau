@@ -5,11 +5,6 @@ return table.freeze({
 	SlotCount = 9,
 	-- Slot tetap di depan (tool), id sesuai UIAssets.Items
 	Tools = table.freeze({ "Axe" }),
-	-- Kategori item (Config/Items) yang tampil di hotbar (Naga TIDAK: dipasang di kavling)
-	Categories = table.freeze({
-		Material = true,
-		Kite = true,
-	}),
 	-- Tombol keyboard per slot, urut dari slot 1
 	KeyCodes = table.freeze({
 		Enum.KeyCode.One,
@@ -23,4 +18,7 @@ return table.freeze({
 		Enum.KeyCode.Nine,
 	}),
 	DisableDefaultBackpack = true,
+	-- Slot yang bisa diisi pemain dari Inventory = SlotCount - jumlah Tools
+	-- Kategori yang boleh dipasang ke hotbar dari Inventory
+	AssignableCategories = table.freeze({ Material = true, Kite = true }),
 })

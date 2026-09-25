@@ -1,29 +1,36 @@
 --!strict
--- Jendela Rakit Layangan: status meja + daftar resep (dari Config/Recipes).
--- Tombol Rakit hanya kirim { RecipeId, UseBooster }; server cek bahan, level meja, jarak,
--- dan mengacak rarity saat selesai.
+--[[
+	Jendela Rakit Layangan: status meja + kartu resep (Config/Recipes), tone gelap metalik.
+	Tombol RAKIT hanya kirim { RecipeId, UseBooster }; server cek bahan, level meja, jarak,
+	dan mengacak rarity saat selesai. Booster Bambu Emas = saklar per resep.
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
+local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local Items = require(ReplicatedStorage.Shared.Config.Items)
-local RarityConfig = require(ReplicatedStorage.Shared.Config.Rarity)
-local Rarity = require(ReplicatedStorage.Shared.Rules.Rarity)
-local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 local Recipes = require(ReplicatedStorage.Shared.Config.Recipes)
+local RarityConfig = require(ReplicatedStorage.Shared.Config.Rarity)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
 local TableRules = require(ReplicatedStorage.Shared.Rules.CraftingTable)
+local Rarity = require(ReplicatedStorage.Shared.Rules.Rarity)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
 
 local Components = script.Parent.Parent.Components
 local Window = require(Components.Window)
-local Block = require(Components.Block)
-local Label = require(Components.Label)
+local Panel = require(Components.Panel)
+local Text = require(Components.Text)
 local Icon = require(Components.Icon)
-local StudButton = require(Components.StudButton)
-local ListRow = require(Components.ListRow)
+local Button = require(Components.Button)
+local Toggle = require(Components.Toggle)
+local ItemSlot = require(Components.ItemSlot)
 local ScrollList = require(Components.ScrollList)
-local Style = require(script.Parent.Parent.Style)
+
+local Children = Fusion.Children
+local peek = Fusion.peek
+local Colors = Theme.Colors
 
 export type Props = {
 	Open: any,
@@ -33,15 +40,14 @@ export type Props = {
 	ActiveRecipe: any, -- "" = kosong (state)
 	ActiveEndsAt: any, -- waktu server (state)
 	ServerTime: any, -- state
+	Luck: any?, -- state
+	DragonActive: any?, -- state
 	OnCraft: (recipeId: string, useBooster: boolean) -> (),
-	Luck: any?, -- pengali luck pemain (state), untuk menampilkan peluang
-	DragonActive: any?, -- Aura Naga aktif di kavling (state) -> crafting lebih cepat
 	Scale: any?,
 }
 
-local ROW_HEIGHT = 118
-local STATUS_HEIGHT = 44
-local PALETTE = "Orange"
+local CARD_HEIGHT = 118
+local STATUS_HEIGHT = 32
 
 local function sortedRecipes(): { Recipes.Recipe }
 	local list = {}
@@ -74,7 +80,7 @@ local function requirementText(inventory: { [string]: number }, cost: { [string]
 			)
 		)
 	end
-	return table.concat(parts, " · ")
+	return table.concat(parts, "  |  ")
 end
 
 local function percent(value: number): string
@@ -83,14 +89,159 @@ local function percent(value: number): string
 	return (string.gsub(text, "%.", ","))
 end
 
+local function recipeCard(scope: any, props: Props, recipe: Recipes.Recipe, busy: any): Instance
+	local requiredLevel = TableRules.requiredLevel(recipe.Id)
+	local useBooster = scope:Value(false)
+	local locked = scope:Computed(function(use)
+		return use(props.TableLevel) < requiredLevel
+	end)
+	local hasMaterials = scope:Computed(function(use)
+		return TableRules.hasMaterials(use(props.Inventory), recipe.Id, use(useBooster))
+	end)
+	local fixedTier = if recipe.FixedRarity then RarityConfig.Tiers[recipe.FixedRarity] else nil
+
+	local rarityText = scope:Computed(function(use)
+		if fixedTier then
+			return string.format(UIText.FixedRarity, fixedTier.DisplayName)
+		end
+		if not Items[recipe.Output].HasRarity then
+			return ""
+		end
+		local chances = Rarity.chances(use(props.Luck) or 1, use(useBooster))
+		return string.format(UIText.LegendaryChance, percent(chances.Legendary))
+	end)
+
+	local content: { any } = {
+		ItemSlot(scope, {
+			Name = "OutputSlot",
+			Item = { Id = ItemKey.make(recipe.Output, recipe.FixedRarity), Count = recipe.OutputAmount },
+			Size = 64,
+		}),
+		Text(scope, {
+			Name = "NameText",
+			Text = Items[recipe.Output].DisplayName,
+			Weight = "Black",
+			TextSize = 15,
+			Metallic = true,
+			Size = UDim2.new(1, -(80 + 110), 0, 20),
+			Position = UDim2.fromOffset(76, 0),
+		}),
+		Text(scope, {
+			Name = "Requirements",
+			Text = scope:Computed(function(use)
+				return requirementText(use(props.Inventory), TableRules.cost(recipe.Id, use(useBooster)))
+			end),
+			Weight = "Regular",
+			TextSize = 11,
+			Color = Colors.TextDim,
+			Wrapped = true,
+			YAlignment = Enum.TextYAlignment.Top,
+			Size = UDim2.new(1, -(80 + 110), 0, 30),
+			Position = UDim2.fromOffset(76, 22),
+		}),
+		Text(scope, {
+			Name = "RarityText",
+			Text = rarityText,
+			TextSize = 11,
+			Color = if fixedTier then fixedTier.Color else Colors.TextDim,
+			Size = UDim2.new(0.5, 0, 0, 14),
+			Position = UDim2.fromOffset(76, 56),
+		}),
+		Icon(scope, {
+			Name = "ClockIcon",
+			Asset = UIAssets.Icons.Clock,
+			Size = UDim2.fromOffset(14, 14),
+			Position = UDim2.fromOffset(76, 74),
+		}),
+		Text(scope, {
+			Name = "DurationText",
+			Text = scope:Computed(function(use)
+				local seconds = TableRules.craftDuration(recipe.Id, use(props.TableLevel), use(props.DragonActive) == true)
+				return string.format(UIText.CraftDuration, string.format("%g", math.floor(seconds * 10) / 10))
+			end),
+			TextSize = 11,
+			Color = Colors.TextDim,
+			Size = UDim2.fromOffset(60, 14),
+			Position = UDim2.fromOffset(94, 74),
+		}),
+		Button(scope, {
+			Name = "CraftButton",
+			Size = UDim2.fromOffset(100, 32),
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, 0, 0, 0),
+			TextSize = 12,
+			Icon = scope:Computed(function(use)
+				return if use(locked) then UIAssets.Icons.Lock else nil
+			end),
+			IconSize = 14,
+			Text = scope:Computed(function(use)
+				return if use(locked) then string.format(UIText.CraftLocked, requiredLevel) else UIText.CraftButton
+			end),
+			Disabled = scope:Computed(function(use)
+				return use(locked) or use(busy) or not use(hasMaterials)
+			end),
+			OnActivated = function()
+				props.OnCraft(recipe.Id, peek(useBooster))
+			end,
+		}),
+	}
+
+	if recipe.Booster then
+		table.insert(
+			content,
+			scope:New("Frame")({
+				Name = "BoosterRow",
+				Size = UDim2.fromOffset(170, 24),
+				AnchorPoint = Vector2.new(1, 1),
+				Position = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				[Children] = {
+					Icon(scope, {
+						Asset = UIAssets.Icons.Booster,
+						Size = UDim2.fromOffset(18, 18),
+						AnchorPoint = Vector2.new(0, 0.5),
+						Position = UDim2.fromScale(0, 0.5),
+					}),
+					Text(scope, {
+						Text = scope:Computed(function(use)
+							return if use(useBooster) then UIText.BoosterOn else UIText.BoosterOff
+						end),
+						TextSize = 10,
+						Color = Colors.TextDim,
+						Size = UDim2.new(1, -76, 1, 0),
+						Position = UDim2.fromOffset(22, 0),
+					}),
+					Toggle(scope, {
+						Value = useBooster,
+						AnchorPoint = Vector2.new(1, 0.5),
+						Position = UDim2.fromScale(1, 0.5),
+						OnToggle = function(newValue)
+							useBooster:set(newValue)
+						end,
+					}),
+				},
+			})
+		)
+	end
+
+	return Panel(scope, {
+		Name = recipe.Id,
+		LayoutOrder = recipe.Order,
+		Size = UDim2.new(1, 0, 0, CARD_HEIGHT),
+		Color = Colors.PanelSoft,
+		StrokeColor = if fixedTier then fixedTier.Color else nil,
+		StrokeTransparency = if fixedTier then 0.3 else Theme.Transparency.ButtonStroke,
+		Padding = 12,
+		Content = content,
+	})
+end
+
 return function(scope: any, props: Props): Instance
 	local busy = scope:Computed(function(use)
 		return use(props.ActiveRecipe) ~= ""
 	end)
-
 	local statusText = scope:Computed(function(use)
-		local recipeId = use(props.ActiveRecipe)
-		local recipe = Recipes[recipeId]
+		local recipe = Recipes[use(props.ActiveRecipe)]
 		if recipe == nil then
 			return UIText.CraftIdle
 		end
@@ -102,160 +253,42 @@ return function(scope: any, props: Props): Instance
 		return string.format(UIText.CraftBusy, name, string.format(UIText.Seconds, remaining))
 	end)
 
-	local rows = {}
+	local cards = {}
 	for _, recipe in sortedRecipes() do
-		local requiredLevel = TableRules.requiredLevel(recipe.Id)
-		local useBooster = scope:Value(false)
-		local locked = scope:Computed(function(use)
-			return use(props.TableLevel) < requiredLevel
-		end)
-		local hasMaterials = scope:Computed(function(use)
-			return TableRules.hasMaterials(use(props.Inventory), recipe.Id, use(useBooster))
-		end)
-
-		-- Info rarity: resep tetap ("Selalu Mythic") atau peluang Legendary (luck & booster)
-		local rarityText = scope:Computed(function(use)
-			if recipe.FixedRarity then
-				return string.format(UIText.FixedRarity, RarityConfig.Tiers[recipe.FixedRarity].DisplayName)
-			end
-			if not Items[recipe.Output].HasRarity then
-				return ""
-			end
-			local chances = Rarity.chances(use(props.Luck) or 1, use(useBooster))
-			return string.format(UIText.LegendaryChance, percent(chances.Legendary))
-		end)
-
-		local content = {
-			Icon(scope, {
-				Name = "Icon",
-				Asset = UIAssets.Items[recipe.Output],
-				Size = UDim2.fromScale(1, 1),
-				ZIndex = 3,
-			}),
-			Label(scope, {
-				Name = "NameText",
-				Text = Items[recipe.Output].DisplayName,
-				Size = UDim2.new(0.45, 0, 0.28, 0),
-				Position = UDim2.fromScale(0.15, 0),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ZIndex = 3,
-			}),
-			Label(scope, {
-				Name = "Requirements",
-				Text = scope:Computed(function(use)
-					return requirementText(use(props.Inventory), TableRules.cost(recipe.Id, use(useBooster)))
-				end),
-				Size = UDim2.new(0.58, 0, 0.2, 0),
-				Position = UDim2.fromScale(0.15, 0.32),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				MaxTextSize = 17,
-				ZIndex = 3,
-			}),
-			Label(scope, {
-				Name = "RarityText",
-				Text = rarityText,
-				TextColor = if recipe.FixedRarity then RarityConfig.Tiers[recipe.FixedRarity].Color else nil,
-				Size = UDim2.new(0.4, 0, 0.2, 0),
-				Position = UDim2.fromScale(0.15, 0.55),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				MaxTextSize = 17,
-				ZIndex = 3,
-			}),
-			Label(scope, {
-				Name = "DurationText",
-				Text = scope:Computed(function(use)
-					local seconds =
-						TableRules.craftDuration(recipe.Id, use(props.TableLevel), use(props.DragonActive) == true)
-					return UIAssets.Icons.Clock.Fallback
-						.. " "
-						.. string.format(UIText.CraftDuration, string.format("%g", math.floor(seconds * 10) / 10))
-				end),
-				Size = UDim2.new(0.3, 0, 0.2, 0),
-				Position = UDim2.fromScale(0.15, 0.78),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				MaxTextSize = 17,
-				ZIndex = 3,
-			}),
-			StudButton(scope, {
-				Name = "CraftButton",
-				Size = UDim2.fromOffset(150, 46),
-				AnchorPoint = Vector2.new(1, 0),
-				Position = UDim2.new(1, 0, 0, 2),
-				Variant = "Primary",
-				Text = scope:Computed(function(use)
-					if use(locked) then
-						return UIAssets.Icons.Lock.Fallback .. " " .. string.format(UIText.CraftLocked, requiredLevel)
-					end
-					return UIText.CraftButton
-				end),
-				Disabled = scope:Computed(function(use)
-					return use(locked) or use(busy) or not use(hasMaterials)
-				end),
-				OnActivated = function()
-					props.OnCraft(recipe.Id, Fusion.peek(useBooster))
-				end,
-			}),
-		}
-
-		if recipe.Booster then
-			table.insert(
-				content,
-				StudButton(scope, {
-					Name = "BoosterButton",
-					Size = UDim2.fromOffset(150, 40),
-					AnchorPoint = Vector2.new(1, 1),
-					Position = UDim2.new(1, 0, 1, -6),
-					Variant = scope:Computed(function(use)
-						return if use(useBooster) then "Gold" else "Secondary"
-					end),
-					Text = scope:Computed(function(use)
-						return if use(useBooster) then UIText.BoosterOn else UIText.BoosterOff
-					end),
-					OnActivated = function()
-						useBooster:set(not Fusion.peek(useBooster))
-					end,
-				})
-			)
-		end
-
-		table.insert(
-			rows,
-			ListRow(scope, {
-				Name = recipe.Id,
-				LayoutOrder = recipe.Order,
-				Height = ROW_HEIGHT,
-				Palette = if recipe.FixedRarity then RarityConfig.Tiers[recipe.FixedRarity].Palette else PALETTE,
-				Content = content,
-			})
-		)
+		table.insert(cards, recipeCard(scope, props, recipe, busy))
 	end
 
 	return Window(scope, {
 		Name = "CraftUI",
 		Title = UIText.CraftTitle,
-		Palette = PALETTE,
 		Open = props.Open,
 		OnClose = props.OnClose,
 		Scale = props.Scale,
-		Size = UDim2.fromOffset(620, 440),
+		Size = UDim2.fromOffset(500, 420),
 		Content = {
-			Style.padding(scope, 14),
-			Block(scope, {
+			Panel(scope, {
 				Name = "Status",
 				Size = UDim2.new(1, 0, 0, STATUS_HEIGHT),
-				Palette = scope:Computed(function(use)
-					return if use(busy) then PALETTE else "Green"
-				end),
-				CornerRadius = UDim.new(1, 0),
-				Padding = 6,
+				Color = Colors.PanelSoft,
+				Corner = Theme.Sizes.Corner,
+				StrokeTransparency = Theme.Transparency.ButtonStroke,
 				Content = {
-					Label(scope, { Name = "StatusText", Text = statusText, ZIndex = 3 }),
+					Text(scope, {
+						Name = "StatusText",
+						Text = statusText,
+						XAlignment = Enum.TextXAlignment.Center,
+						Size = UDim2.fromScale(1, 1),
+						Color = scope:Computed(function(use)
+							return if use(busy) then Colors.Money else Colors.TextDim
+						end),
+					}),
 				},
 			}),
 			ScrollList(scope, {
-				Size = UDim2.new(1, 0, 1, -(STATUS_HEIGHT + 14)),
-				Position = UDim2.fromOffset(0, STATUS_HEIGHT + 14),
-				Content = rows,
+				Size = UDim2.new(1, 0, 1, -(STATUS_HEIGHT + 10)),
+				Position = UDim2.fromOffset(0, STATUS_HEIGHT + 10),
+				Content = cards,
+				Gap = 10,
 			}),
 		},
 	})

@@ -13,8 +13,9 @@ local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
 
 local UI = script.Parent.Parent.UI
-local Block = require(UI.Components.Block)
-local Label = require(UI.Components.Label)
+local Panel = require(UI.Components.Panel)
+local Text = require(UI.Components.Text)
+local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local Icon = require(UI.Components.Icon)
 
 local peek = Fusion.peek
@@ -45,23 +46,29 @@ local function createBoard(model: Model): Board?
 		Enabled = visible,
 		Parent = Players.LocalPlayer:WaitForChild("PlayerGui"),
 		[Children] = {
-			Block(scope, {
+			Panel(scope, {
 				Name = "Pill",
-				Size = UDim2.new(1, 0, 1, -6),
-				CornerRadius = UDim.new(1, 0),
-				Palette = "Orange",
-				Padding = 4,
+				Size = UDim2.fromScale(1, 1),
+				Color = Theme.Colors.Bar,
+				Transparency = Theme.Transparency.Bar,
+				Corner = UDim.new(1, 0),
+				Padding = 6,
 				Content = {
 					Icon(scope, {
 						Asset = icon,
-						Size = UDim2.fromScale(1, 1),
+						Size = UDim2.fromOffset(32, 32),
+						AnchorPoint = Vector2.new(0, 0.5),
+						Position = UDim2.fromScale(0, 0.5),
 						ZIndex = 3,
 					}),
-					Label(scope, {
+					Text(scope, {
 						Name = "TimerText",
 						Text = text,
-						Size = UDim2.new(1, -44, 1, 0),
-						Position = UDim2.fromOffset(44, 0),
+						Weight = "Black",
+						TextSize = 20,
+						XAlignment = Enum.TextXAlignment.Center,
+						Size = UDim2.new(1, -40, 1, 0),
+						Position = UDim2.fromOffset(40, 0),
 						ZIndex = 3,
 					}),
 				},

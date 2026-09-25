@@ -1,22 +1,22 @@
 --!strict
--- Jendela Upgrade Meja Rakit. Biaya & aksi upgrade disambungkan di Fase 4.
+-- Jendela Upgrade Meja Rakit (dibuka dari Papan Nama kavling).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
-local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
+local Style = require(script.Parent.Parent.Style)
 local Components = script.Parent.Parent.Components
 local Window = require(Components.Window)
-local Label = require(Components.Label)
-local StudButton = require(Components.StudButton)
-local Style = require(script.Parent.Parent.Style)
+local Text = require(Components.Text)
+local Button = require(Components.Button)
 
 export type Props = {
 	Open: any,
 	OnClose: () -> (),
 	CurrentLevel: any, -- number (state)
 	MaxLevel: number,
-	CostText: any, -- string (state)
-	InfoText: any?, -- kecepatan & resep yang terbuka (state)
+	CostText: any,
+	InfoText: any?,
 	UpgradeText: any,
 	UpgradeDisabled: any,
 	OnUpgrade: () -> (),
@@ -31,31 +31,28 @@ return function(scope: any, props: Props): Instance
 	return Window(scope, {
 		Name = "UpgradeUI",
 		Title = UIText.UpgradeTitle,
-		Palette = "UpgradeWindow",
 		Open = props.Open,
 		OnClose = props.OnClose,
 		Scale = props.Scale,
-		Size = UDim2.fromOffset(460, 400),
+		Size = UDim2.fromOffset(320, 320),
 		Content = {
-			Style.padding(scope, 20),
-			scope:New("UIListLayout")({
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				HorizontalAlignment = Enum.HorizontalAlignment.Center,
-				VerticalAlignment = Enum.VerticalAlignment.Center,
-				Padding = UDim.new(0, 10),
-			}),
-			Label(scope, {
+			Style.list(scope, Enum.FillDirection.Vertical, 8, Enum.HorizontalAlignment.Center),
+			Text(scope, {
 				Name = "CurrentLevel",
 				LayoutOrder = 1,
-				Size = UDim2.new(1, 0, 0, 36),
+				Weight = "Black",
+				TextSize = 18,
+				XAlignment = Enum.TextXAlignment.Center,
 				Text = scope:Computed(function(use)
 					return string.format(UIText.CurrentLevel, use(props.CurrentLevel))
 				end),
 			}),
-			Label(scope, {
+			Text(scope, {
 				Name = "NextLevel",
 				LayoutOrder = 2,
-				Size = UDim2.new(1, 0, 0, 30),
+				Weight = "Regular",
+				Color = Theme.Colors.TextDim,
+				XAlignment = Enum.TextXAlignment.Center,
 				Text = scope:Computed(function(use)
 					if use(isMax) then
 						return UIText.MaxLevel
@@ -63,27 +60,30 @@ return function(scope: any, props: Props): Instance
 					return string.format(UIText.NextLevel, use(props.CurrentLevel) + 1)
 				end),
 			}),
-			Label(scope, {
-				Name = "CostText",
+			Text(scope, {
+				Name = "InfoText",
 				LayoutOrder = 3,
-				Size = UDim2.new(1, 0, 0, 30),
+				Weight = "Regular",
+				TextSize = 12,
+				Color = Theme.Colors.TextDim,
+				XAlignment = Enum.TextXAlignment.Center,
+				Wrapped = true,
+				Size = UDim2.new(1, 0, 0, 40),
+				Text = props.InfoText or "",
+			}),
+			Text(scope, {
+				Name = "CostText",
+				LayoutOrder = 4,
+				Color = Theme.Colors.Money,
+				XAlignment = Enum.TextXAlignment.Center,
 				Text = scope:Computed(function(use)
 					return string.format(UIText.Cost, use(props.CostText))
 				end),
 			}),
-			Label(scope, {
-				Name = "InfoText",
-				LayoutOrder = 4,
-				Size = UDim2.new(1, 0, 0, 44),
-				Text = props.InfoText or "",
-				MaxTextSize = 20,
-			}),
-			StudButton(scope, {
+			Button(scope, {
 				Name = "UpgradeButton",
 				LayoutOrder = 5,
-				Size = UDim2.fromOffset(220, 62),
-				Variant = "Primary",
-				Icon = UIAssets.Icons.Upgrade,
+				Size = UDim2.fromOffset(180, 40),
 				Text = props.UpgradeText,
 				Disabled = scope:Computed(function(use)
 					return use(isMax) or use(props.UpgradeDisabled) == true

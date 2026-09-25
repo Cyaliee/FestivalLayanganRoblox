@@ -1,17 +1,17 @@
 --!strict
 --[[
-	Jendela modal gaya Studded (seperti menu di kit StuddedUI):
-	badan putih dengan stud tipis, header berwarna dengan stud, tombol X merah di header,
-	outline & bayangan warna gelap dari palette. Muncul dengan efek "pop".
+	Jendela gaya DonationMenu / Inventory: panel gelap, judul GothamBlack metalik rata kiri,
+	garis putih di bawah judul, tombol X metalik. Buka = meluncur dari bawah (Spring).
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
-local Block = require(script.Parent.Block)
-local Label = require(script.Parent.Label)
-local StudButton = require(script.Parent.StudButton)
+local Style = require(script.Parent.Parent.Style)
+local Panel = require(script.Parent.Panel)
+local Text = require(script.Parent.Text)
+local Button = require(script.Parent.Button)
 
 local Children = Fusion.Children
 local Anim = Theme.Animation
@@ -19,30 +19,27 @@ local Anim = Theme.Animation
 export type Props = {
 	Name: string,
 	Title: any,
-	Palette: any?, -- warna header/outline (nama palette/role). Default "Secondary"
 	Open: any, -- boolean (state)
 	OnClose: () -> (),
 	Size: UDim2,
-	Scale: any?, -- skala layar (state), default 1
+	Scale: any?, -- skala layar (state)
+	HeaderRight: { any }?, -- elemen tambahan di kanan judul (mis. info tas)
 	Content: { any },
 }
 
-local HEADER_HEIGHT = 64
-local CLOSE_SIZE = 44
+local HEADER_HEIGHT = 48
+local CLOSE_SIZE = 28
 
 return function(scope: any, props: Props): Instance
-	local accent = props.Palette or "Secondary"
 	local isOpen = scope:Computed(function(use)
 		return use(props.Open) == true
 	end)
-	local pop = scope:Spring(
+	local offsetY = scope:Spring(
 		scope:Computed(function(use)
-			return if use(isOpen) then 1 else 0
+			return if use(isOpen) then 0 else Anim.WindowHiddenOffset
 		end),
 		Anim.WindowSpeed,
-		scope:Computed(function(use)
-			return if use(isOpen) then Anim.WindowOpenDamping else Anim.WindowCloseDamping
-		end)
+		Anim.WindowDamping
 	)
 
 	return scope:New("Frame")({
@@ -50,67 +47,70 @@ return function(scope: any, props: Props): Instance
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
 		Visible = scope:Computed(function(use)
-			return use(isOpen) or use(pop) > 0.02
+			return use(isOpen) or use(offsetY) < Anim.WindowHiddenOffset - 1
 		end),
 
 		[Children] = {
-			scope:New("Frame")({
-				Name = "Backdrop",
-				Size = UDim2.fromScale(1, 1),
-				BackgroundColor3 = Theme.Colors.Backdrop,
-				BackgroundTransparency = scope:Computed(function(use)
-					return 1 - 0.4 * math.clamp(use(pop), 0, 1)
-				end),
-				Active = true,
-			}),
-			Block(scope, {
-				Name = "Frame",
+			Panel(scope, {
+				Name = "MasterFrame",
 				Size = props.Size,
 				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.fromScale(0.5, 0.5),
-				Palette = accent,
-				SurfaceColor = Theme.Palettes.White.Surface,
-				CornerRadius = Theme.Sizes.PanelCorner,
-				Studs = Theme.Studs.PanelTransparency,
-				Scale = scope:Computed(function(use)
-					return math.max(use(pop), 0.001) * (use(props.Scale) or 1)
+				Position = scope:Computed(function(use)
+					return UDim2.new(0.5, 0, 0.5, use(offsetY))
 				end),
+				StrokeThickness = 2,
 				Content = {
-					Block(scope, {
-						Name = "Top",
-						Size = UDim2.new(1, 0, 0, HEADER_HEIGHT),
-						Palette = accent,
-						CornerRadius = Theme.Sizes.PanelCorner,
-						Shadow = false,
-						Content = {
-							Label(scope, {
-								Name = "Title",
-								Text = props.Title,
-								Font = Theme.TitleFont,
-								Size = UDim2.new(0.75, 0, 0.6, 0),
-								Position = UDim2.fromScale(0.5, 0.5),
-								AnchorPoint = Vector2.new(0.5, 0.5),
-								MaxTextSize = 40,
-								ZIndex = 3,
-							}),
-							StudButton(scope, {
-								Name = "CloseButton",
-								Size = UDim2.fromOffset(CLOSE_SIZE, CLOSE_SIZE),
-								AnchorPoint = Vector2.new(1, 0.5),
-								Position = UDim2.new(1, -12, 0.5, -2),
-								Variant = "Danger",
-								Icon = UIAssets.Icons.Close,
-								OnActivated = props.OnClose,
-							}),
-						},
+					scope:New("UIScale")({ Scale = props.Scale or 1 }),
+
+					Text(scope, {
+						Name = "Header",
+						Text = props.Title,
+						Weight = "Black",
+						TextSize = Theme.Sizes.TextTitle,
+						Metallic = true,
+						Size = UDim2.new(0.6, 0, 0, HEADER_HEIGHT),
+						Position = UDim2.fromOffset(16, 0),
 					}),
+
 					scope:New("Frame")({
-						Name = "Container",
-						Size = UDim2.new(1, 0, 1, -HEADER_HEIGHT),
-						Position = UDim2.fromOffset(0, HEADER_HEIGHT),
+						Name = "HeaderRight",
+						Size = UDim2.new(0.6, -(CLOSE_SIZE + 24), 0, HEADER_HEIGHT),
+						AnchorPoint = Vector2.new(1, 0),
+						Position = UDim2.new(1, -(CLOSE_SIZE + 20), 0, 0),
 						BackgroundTransparency = 1,
-						ZIndex = 3,
-						[Children] = props.Content,
+						[Children] = Style.children(
+							Style.list(scope, Enum.FillDirection.Horizontal, 8, Enum.HorizontalAlignment.Right),
+							props.HeaderRight
+						),
+					}),
+
+					Button(scope, {
+						Name = "CloseBtn",
+						Icon = UIAssets.Icons.Close,
+						IconSize = 14,
+						Size = UDim2.fromOffset(CLOSE_SIZE, CLOSE_SIZE),
+						AnchorPoint = Vector2.new(1, 0.5),
+						Position = UDim2.new(1, -12, 0, HEADER_HEIGHT / 2),
+						Corner = UDim.new(0, 6),
+						OnActivated = props.OnClose,
+					}),
+
+					-- Garis putih di bawah judul (seperti referensi Inventory)
+					scope:New("Frame")({
+						Name = "Divider",
+						Size = UDim2.new(1, -32, 0, 2),
+						Position = UDim2.fromOffset(16, HEADER_HEIGHT - 2),
+						BackgroundColor3 = Theme.Colors.Stroke,
+						BackgroundTransparency = 0.15,
+						BorderSizePixel = 0,
+					}),
+
+					scope:New("Frame")({
+						Name = "Body",
+						Size = UDim2.new(1, 0, 1, -(HEADER_HEIGHT + 8)),
+						Position = UDim2.fromOffset(0, HEADER_HEIGHT + 8),
+						BackgroundTransparency = 1,
+						[Children] = Style.children(Style.padding(scope, 4, 14, 14), props.Content),
 					}),
 				},
 			}),

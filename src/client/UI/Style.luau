@@ -1,81 +1,52 @@
 --!strict
--- Potongan gaya yang dipakai semua komponen (sudut, outline, stud, padding, palette).
+-- Potongan gaya bersama (tema gelap metalik): sudut, stroke, gradient metalik, padding.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
-
-local Children = Fusion.Children
 
 local Style = {}
 
-export type Palette = { Surface: Color3, Dark: Color3 }
-
--- Terima nama palette ("Green"), nama role ("Primary"), atau tabel palette.
-function Style.palette(value: any): Palette
-	if type(value) == "table" then
-		return value
-	end
-	if type(value) == "string" then
-		local direct = Theme.Palettes[value]
-		if direct then
-			return direct
-		end
-		local role = Theme.Roles[value]
-		if role and Theme.Palettes[role] then
-			return Theme.Palettes[role]
-		end
-	end
-	return Theme.Palettes[Theme.Roles.Primary]
+function Style.corner(scope: any, radius: UDim?): Instance
+	return scope:New("UICorner")({ CornerRadius = radius or Theme.Sizes.Corner })
 end
 
-function Style.corner(scope: any, radius: any?): Instance
-	return scope:New("UICorner")({
-		CornerRadius = radius or Theme.Sizes.Corner,
+-- Stroke pinggir; color/transparency boleh state
+function Style.stroke(scope: any, props: { Color: any?, Transparency: any?, Thickness: number?, Enabled: any? }?): Instance
+	local p = props or {}
+	return scope:New("UIStroke")({
+		Color = p.Color or Theme.Colors.Stroke,
+		Transparency = p.Transparency or Theme.Transparency.ButtonStroke,
+		Thickness = p.Thickness or 1,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Enabled = p.Enabled,
 	})
 end
 
--- Outline tebal di pinggir, warnanya boleh state
-function Style.outline(scope: any, color: any, enabled: any?): Instance
-	return scope:New("UIStroke")({
-		Color = color,
-		Thickness = Theme.Sizes.Outline,
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		LineJoinMode = Enum.LineJoinMode.Round,
+function Style.metallic(scope: any, enabled: any?): Instance
+	return scope:New("UIGradient")({
+		Color = Theme.MetallicGradient,
+		Rotation = 90,
 		Enabled = enabled,
 	})
 end
 
--- Tekstur stud yang terpotong mengikuti sudut bulat (CanvasGroup seperti di kit)
-function Style.studs(scope: any, transparency: number, radius: any?, visible: any?): Instance
-	return scope:New("CanvasGroup")({
-		Name = "StudsMask",
-		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 1,
-		Visible = visible,
-		ZIndex = 1,
-		[Children] = {
-			Style.corner(scope, radius),
-			scope:New("ImageLabel")({
-				Name = "Studs",
-				Size = UDim2.fromScale(1, 1),
-				BackgroundTransparency = 1,
-				Image = Theme.Studs.Image,
-				ImageTransparency = transparency,
-				ScaleType = Enum.ScaleType.Tile,
-				TileSize = UDim2.fromOffset(Theme.Studs.TileSize, Theme.Studs.TileSize),
-			}),
-		},
+function Style.padding(scope: any, top: number, side: number?, bottom: number?): Instance
+	local s = side or top
+	return scope:New("UIPadding")({
+		PaddingTop = UDim.new(0, top),
+		PaddingBottom = UDim.new(0, bottom or top),
+		PaddingLeft = UDim.new(0, s),
+		PaddingRight = UDim.new(0, s),
 	})
 end
 
-function Style.padding(scope: any, px: number): Instance
-	local udim = UDim.new(0, px)
-	return scope:New("UIPadding")({
-		PaddingTop = udim,
-		PaddingBottom = udim,
-		PaddingLeft = udim,
-		PaddingRight = udim,
+function Style.list(scope: any, direction: Enum.FillDirection?, gap: number?, align: Enum.HorizontalAlignment?): Instance
+	return scope:New("UIListLayout")({
+		FillDirection = direction or Enum.FillDirection.Vertical,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Padding = UDim.new(0, gap or 8),
+		HorizontalAlignment = align or Enum.HorizontalAlignment.Left,
+		VerticalAlignment = Enum.VerticalAlignment.Center,
 	})
 end
 

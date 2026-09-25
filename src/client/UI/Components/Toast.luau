@@ -1,22 +1,23 @@
 --!strict
--- Notifikasi yang meluncur dari atas layar ("Tas Penuh!", "Kavling berhasil diklaim!", ...).
+-- Notifikasi gelap yang meluncur dari atas. Dipakai juga untuk banner pengumuman global.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
-local Block = require(script.Parent.Block)
-local Label = require(script.Parent.Label)
+local Style = require(script.Parent.Parent.Style)
 
+local Children = Fusion.Children
 local Anim = Theme.Animation
 
 export type Props = {
+	Name: string?,
 	Text: any,
 	Visible: any, -- boolean (state)
-	Palette: any?,
-	Scale: any?,
-	Name: string?,
+	AccentColor: any?, -- warna stroke (mis. warna rarity untuk pengumuman)
 	Size: UDim2?,
-	ShownY: number?, -- posisi Y saat tampil (default UITheme.Animation.ToastShownY)
-	MaxTextSize: number?,
+	ShownY: number?,
+	TextSize: number?,
+	Scale: any?,
 }
 
 return function(scope: any, props: Props): Instance
@@ -28,23 +29,33 @@ return function(scope: any, props: Props): Instance
 		Anim.ToastDamping
 	)
 
-	return Block(scope, {
+	return scope:New("Frame")({
 		Name = props.Name or "Notification",
 		Size = props.Size or UDim2.fromOffset(Theme.Sizes.ToastWidth, Theme.Sizes.ToastHeight),
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = scope:Computed(function(use)
 			return UDim2.new(0.5, 0, 0, use(y))
 		end),
-		CornerRadius = Theme.Sizes.PanelCorner,
-		Palette = props.Palette or "Toast",
-		Scale = props.Scale,
-		Padding = 8,
-		Content = {
-			Label(scope, {
+		BackgroundColor3 = Theme.Colors.Bar,
+		BackgroundTransparency = Theme.Transparency.Bar,
+		[Children] = {
+			scope:New("UIScale")({ Scale = props.Scale or 1 }),
+			Style.corner(scope, Theme.Sizes.BarCorner),
+			Style.stroke(scope, {
+				Color = props.AccentColor,
+				Thickness = if props.AccentColor then 2 else 1,
+				Transparency = if props.AccentColor then 0 else Theme.Transparency.PanelStroke,
+			}),
+			Style.padding(scope, 4, 14),
+			scope:New("TextLabel")({
 				Name = "MessageText",
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
 				Text = props.Text,
-				MaxTextSize = props.MaxTextSize,
-				ZIndex = 3,
+				FontFace = Theme.Fonts.Bold,
+				TextSize = props.TextSize or Theme.Sizes.TextBody,
+				TextColor3 = Theme.Colors.Text,
+				TextWrapped = true,
 			}),
 		},
 	})

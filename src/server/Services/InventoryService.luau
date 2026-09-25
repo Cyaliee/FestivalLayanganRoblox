@@ -110,6 +110,13 @@ function InventoryService.tryRemove(player: Player, key: string, amount: number)
 	else
 		data.Inventory[key] = remaining
 	end
+	-- Item habis -> lepas dari hotbar
+	if remaining == 0 and data.Hotbar then
+		local index = table.find(data.Hotbar, key)
+		if index then
+			table.remove(data.Hotbar, index)
+		end
+	end
 	return true
 end
 

@@ -1,141 +1,132 @@
 --!strict
--- Jendela toko/pengepul untuk satu shop (Config/Shops). Beli atau jual tergantung shop.Type.
--- Tombol hanya kirim intent { ItemKey, Mode }; harga & jumlah dihitung server.
--- Layangan tampil per rarity (warna baris sesuai rarity).
+--[[
+	Shop (tombol Shop di sidebar): kartu gamepass seperti referensi Shop
+	(gambar besar kiri, nama, deskripsi, tombol harga Robux). Tone gelap metalik.
+	Pembelian: MarketplaceService:PromptGamePassPurchase (dipanggil controller).
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
-local ShopsConfig = require(ReplicatedStorage.Shared.Config.Shops)
+local Gamepasses = require(ReplicatedStorage.Shared.Config.Gamepasses)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
-local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 
 local Components = script.Parent.Parent.Components
 local Window = require(Components.Window)
-local Label = require(Components.Label)
+local Panel = require(Components.Panel)
+local Text = require(Components.Text)
 local Icon = require(Components.Icon)
-local StudButton = require(Components.StudButton)
-local ListRow = require(Components.ListRow)
+local Button = require(Components.Button)
 local ScrollList = require(Components.ScrollList)
-local Style = require(script.Parent.Parent.Style)
 
 export type Props = {
-	Shop: ShopsConfig.Shop,
 	Open: any,
 	OnClose: () -> (),
-	Inventory: any, -- { [ItemId]: number } (state)
-	Coins: any, -- number (state)
-	OnTrade: (itemKey: string, mode: string) -> (),
+	Owned: any, -- { [passKey]: boolean } (state)
+	Prices: any, -- { [passKey]: number? } harga Robux (state)
+	OnBuy: (passKey: string) -> (),
 	Scale: any?,
 }
 
-local ROW_HEIGHT = 84
-local BUTTON_WIDTH = 116
-
-local function row(scope: any, props: Props, entry: ShopsConfig.ShopItem): Instance
-	local key = entry.ItemKey
-	local itemId = ItemKey.parse(key)
-	local tier = ItemKey.rarity(key)
-	local isBuy = props.Shop.Type == "Buy"
-	local owned = scope:Computed(function(use)
-		return use(props.Inventory)[key] or 0
-	end)
-	local canAfford = scope:Computed(function(use)
-		return use(props.Coins) >= entry.Price
-	end)
-	local hasItem = scope:Computed(function(use)
-		return use(owned) > 0
-	end)
-
-	local function button(order: number, text: string, mode: string, variant: string, enabled: any)
-		return StudButton(scope, {
-			Name = mode .. "Button",
-			Size = UDim2.fromOffset(BUTTON_WIDTH, 42),
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -(order - 1) * (BUTTON_WIDTH + 10), 0.5, -2),
-			Variant = variant,
-			Text = text,
-			Disabled = scope:Computed(function(use)
-				return not use(enabled)
-			end),
-			OnActivated = function()
-				props.OnTrade(key, mode)
-			end,
-		})
-	end
-
-	return ListRow(scope, {
-		Name = key,
-		LayoutOrder = entry.Order,
-		Height = ROW_HEIGHT,
-		Palette = if tier and tier.Id ~= "Common" then tier.Palette else props.Shop.Palette,
-		Content = Style.children(
-			Icon(scope, {
-				Name = "Icon",
-				Asset = UIAssets.Items[itemId],
-				Size = UDim2.fromScale(1, 1),
-				ZIndex = 3,
-			}),
-			Label(scope, {
-				Name = "NameText",
-				Text = ItemKey.displayName(key),
-				Size = UDim2.new(0.45, 0, 0.45, 0),
-				Position = UDim2.fromScale(0.18, 0),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ZIndex = 3,
-			}),
-			Icon(scope, {
-				Name = "CoinIcon",
-				Asset = UIAssets.Icons.Coin,
-				Size = UDim2.fromScale(0.34, 0.34),
-				Position = UDim2.fromScale(0.18, 0.55),
-				ZIndex = 3,
-			}),
-			Label(scope, {
-				Name = "PriceText",
-				Text = string.format(UIText.Price, Format.number(entry.Price)),
-				Size = UDim2.new(0.12, 0, 0.34, 0),
-				Position = UDim2.fromScale(0.25, 0.55),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ZIndex = 3,
-			}),
-			Label(scope, {
-				Name = "OwnedText",
-				Text = scope:Computed(function(use)
-					return string.format(UIText.Owned, Format.number(use(owned)))
-				end),
-				Size = UDim2.new(0.2, 0, 0.3, 0),
-				Position = UDim2.fromScale(0.38, 0.57),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ZIndex = 3,
-			}),
-			if isBuy
-				then button(2, UIText.BuyOne, "One", "Primary", canAfford)
-				else button(2, UIText.SellOne, "One", "Gold", hasItem),
-			if isBuy
-				then button(1, string.format(UIText.BuyBulk, ShopsConfig.BulkBuyAmount), "Bulk", "Primary", canAfford)
-				else button(1, UIText.SellAll, "All", "Gold", hasItem)
-		),
-	})
-end
+local CARD_HEIGHT = 96
 
 return function(scope: any, props: Props): Instance
-	local rows = {}
-	for _, entry in props.Shop.Items do
-		table.insert(rows, row(scope, props, entry))
+	local keys = {}
+	for key in Gamepasses.Passes do
+		table.insert(keys, key)
+	end
+	table.sort(keys, function(a, b)
+		return Gamepasses.Passes[a].Order < Gamepasses.Passes[b].Order
+	end)
+
+	local cards = {}
+	for index, key in keys do
+		local pass = Gamepasses.Passes[key]
+		local owned = scope:Computed(function(use)
+			return use(props.Owned)[key] == true
+		end)
+		table.insert(
+			cards,
+			Panel(scope, {
+				Name = key,
+				LayoutOrder = index,
+				Size = UDim2.new(1, 0, 0, CARD_HEIGHT),
+				Color = Theme.Colors.PanelSoft,
+				StrokeTransparency = Theme.Transparency.ButtonStroke,
+				Content = {
+					Panel(scope, {
+						Name = "Artwork",
+						Size = UDim2.fromOffset(CARD_HEIGHT - 16, CARD_HEIGHT - 16),
+						Position = UDim2.fromOffset(8, 8),
+						Color = Theme.Colors.Slot,
+						Corner = Theme.Sizes.Corner,
+						Content = {
+							Icon(scope, {
+								Asset = UIAssets.Gamepasses[key],
+								Size = UDim2.fromScale(0.9, 0.9),
+								Position = UDim2.fromScale(0.5, 0.5),
+								AnchorPoint = Vector2.new(0.5, 0.5),
+							}),
+						},
+					}),
+					Text(scope, {
+						Name = "NameText",
+						Text = pass.DisplayName,
+						Weight = "Black",
+						TextSize = 16,
+						Metallic = true,
+						Size = UDim2.new(1, -(CARD_HEIGHT + 8), 0, 22),
+						Position = UDim2.fromOffset(CARD_HEIGHT, 10),
+					}),
+					Text(scope, {
+						Name = "DescriptionText",
+						Text = pass.Description,
+						Weight = "Regular",
+						TextSize = 12,
+						Color = Theme.Colors.TextDim,
+						Wrapped = true,
+						YAlignment = Enum.TextYAlignment.Top,
+						Size = UDim2.new(1, -(CARD_HEIGHT + 8), 0, 30),
+						Position = UDim2.fromOffset(CARD_HEIGHT, 34),
+					}),
+					Button(scope, {
+						Name = "BuyButton",
+						Size = UDim2.fromOffset(96, 28),
+						AnchorPoint = Vector2.new(1, 1),
+						Position = UDim2.new(1, -8, 1, -8),
+						TextSize = 12,
+						Text = scope:Computed(function(use)
+							if use(owned) then
+								return UIText.ShopOwned
+							end
+							local price = use(props.Prices)[key]
+							return if price then string.format(UIText.ShopRobux, Format.number(price)) else UIText.ShopUnavailable
+						end),
+						Variant = scope:Computed(function(use)
+							return if use(owned) then "Ghost" else "Metal"
+						end),
+						Disabled = scope:Computed(function(use)
+							return use(owned) or pass.Id == 0
+						end),
+						OnActivated = function()
+							props.OnBuy(key)
+						end,
+					}),
+				},
+			})
+		)
 	end
 
 	return Window(scope, {
-		Name = ShopsConfig.screenName(props.Shop.Id),
-		Title = props.Shop.Title,
-		Palette = props.Shop.Palette,
+		Name = "Shop",
+		Title = UIText.ShopTitle,
 		Open = props.Open,
 		OnClose = props.OnClose,
 		Scale = props.Scale,
-		Size = UDim2.fromOffset(600, 420),
+		Size = UDim2.fromOffset(340, 420),
 		Content = {
-			Style.padding(scope, 14),
-			ScrollList(scope, { Content = rows }),
+			ScrollList(scope, { Content = cards, Gap = 10 }),
 		},
 	})
 end

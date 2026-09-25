@@ -1,14 +1,15 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local ProfileCard = require(script.Parent.Parent.Components.ProfileCard)
+local UI = script.Parent.Parent
 local Format = require(ReplicatedStorage.Shared.Util.Format)
+local ProfileCard = require(UI.Components.ProfileCard)
 
 local controls = {
 	DisplayName = "Melvin",
 	UserId = 1,
 	Money = 907345,
-	Level = 11,
+	Level = 1,
 	Exp = 193,
 	ExpNeeded = 523,
 }
@@ -26,7 +27,7 @@ return {
 				return "Rp. " .. Format.number(use(c.Money))
 			end),
 			LevelText = scope:Computed(function(use)
-				return "Lv " .. use(c.Level)
+				return "Lv. " .. use(c.Level)
 			end),
 			ExpText = scope:Computed(function(use)
 				return use(c.Exp) .. " / " .. use(c.ExpNeeded)

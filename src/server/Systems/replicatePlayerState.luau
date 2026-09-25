@@ -42,6 +42,8 @@ local function makeSnapshot(data: DataService.Data)
 		ActiveCraftRecipe = if data.ActiveCraft then data.ActiveCraft.RecipeId else "",
 		ActiveCraftEndsAt = if data.ActiveCraft then data.ActiveCraft.EndsAt else 0,
 		PlacedDragon = data.PlacedDragon or "",
+		Hotbar = table.clone(data.Hotbar),
+		Settings = table.clone(data.Settings),
 	}
 end
 
@@ -56,6 +58,15 @@ local function makeSignature(snapshot): string
 		snapshot.ActiveCraftEndsAt,
 		snapshot.PlacedDragon,
 	}
+	table.insert(parts, "hotbar:" .. table.concat(snapshot.Hotbar, "|"))
+	local settingKeys = {}
+	for key in snapshot.Settings do
+		table.insert(settingKeys, key)
+	end
+	table.sort(settingKeys)
+	for _, key in settingKeys do
+		table.insert(parts, key .. ":" .. tostring(snapshot.Settings[key]))
+	end
 	local keys = {}
 	for key in snapshot.Inventory do
 		table.insert(keys, key)

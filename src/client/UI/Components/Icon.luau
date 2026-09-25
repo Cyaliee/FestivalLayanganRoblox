@@ -1,5 +1,5 @@
 --!strict
--- Ikon dari Config/UIAssets. Kalau Image kosong, tampil Fallback (emoji/teks).
+-- Ikon gambar dari Config/UIAssets. Selama Image kosong, tampil Label placeholder (bukan emoji).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
@@ -9,13 +9,14 @@ local Children = Fusion.Children
 
 export type Props = {
 	Name: string?,
-	Asset: any, -- UIAssets.IconAsset atau state-nya (boleh nil = kosong)
+	Asset: any, -- UIAssets.IconAsset (boleh state / nil)
 	Size: any?,
 	Position: any?,
 	AnchorPoint: any?,
 	LayoutOrder: number?,
 	ZIndex: number?,
-	Transparency: any?, -- untuk slot kosong/disabled
+	Color: any?, -- ImageColor3
+	Transparency: any?,
 }
 
 return function(scope: any, props: Props): Instance
@@ -23,12 +24,12 @@ return function(scope: any, props: Props): Instance
 		local asset = use(props.Asset)
 		return if asset then asset.Image else ""
 	end)
-	local fallback = scope:Computed(function(use)
+	local label = scope:Computed(function(use)
 		local asset = use(props.Asset)
-		return if asset then asset.Fallback else ""
+		return if asset then asset.Label else ""
 	end)
 
-	return scope:New("Frame")({
+	return scope:New("ImageLabel")({
 		Name = props.Name or "Icon",
 		Size = props.Size or UDim2.fromScale(1, 1),
 		Position = props.Position,
@@ -36,34 +37,26 @@ return function(scope: any, props: Props): Instance
 		LayoutOrder = props.LayoutOrder,
 		ZIndex = props.ZIndex,
 		BackgroundTransparency = 1,
-
+		ScaleType = Enum.ScaleType.Fit,
+		Image = image,
+		ImageColor3 = props.Color,
+		ImageTransparency = props.Transparency,
 		[Children] = {
-			scope:New("UIAspectRatioConstraint")({ AspectRatio = 1 }),
-			scope:New("ImageLabel")({
-				Name = "Image",
-				Size = UDim2.fromScale(1, 1),
-				BackgroundTransparency = 1,
-				ScaleType = Enum.ScaleType.Fit,
-				Image = image,
-				ImageTransparency = props.Transparency,
-				ZIndex = props.ZIndex,
-				Visible = scope:Computed(function(use)
-					return use(image) ~= ""
-				end),
-			}),
 			scope:New("TextLabel")({
-				Name = "Fallback",
+				Name = "Placeholder",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundTransparency = 1,
-				FontFace = Theme.Font,
-				Text = fallback,
+				Text = label,
+				FontFace = Theme.Fonts.Bold,
+				TextColor3 = Theme.Colors.TextMuted,
 				TextScaled = true,
-				TextColor3 = Theme.Colors.Text,
-				TextTransparency = props.Transparency,
 				ZIndex = props.ZIndex,
 				Visible = scope:Computed(function(use)
 					return use(image) == ""
 				end),
+				[Children] = {
+					scope:New("UITextSizeConstraint")({ MaxTextSize = 14, MinTextSize = 6 }),
+				},
 			}),
 		},
 	})

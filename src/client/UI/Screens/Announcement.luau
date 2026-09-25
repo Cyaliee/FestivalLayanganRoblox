@@ -3,13 +3,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
+local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local Toast = require(script.Parent.Parent.Components.Toast)
 
 local Children = Fusion.Children
 
 export type Props = {
 	Text: any,
-	Palette: any,
+	Palette: any, -- nama warna (Theme.AnnouncementColors)
 	Visible: any,
 	Scale: any?,
 }
@@ -24,10 +25,12 @@ return function(scope: any, props: Props): Instance
 				Name = "Banner",
 				Text = props.Text,
 				Visible = props.Visible,
-				Palette = props.Palette,
-				Size = UDim2.fromOffset(620, 72),
-				ShownY = 84,
-				MaxTextSize = 34,
+				AccentColor = scope:Computed(function(use)
+					return Theme.AnnouncementColors[use(props.Palette)] or Theme.Colors.Stroke
+				end),
+				Size = UDim2.fromOffset(520, 52),
+				ShownY = 112,
+				TextSize = 16,
 				Scale = props.Scale,
 			}),
 		},

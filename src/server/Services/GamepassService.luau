@@ -15,6 +15,10 @@ local devOverrides: { [Player]: { [string]: boolean } } = {}
 local function publishAttributes(player: Player)
 	player:SetAttribute(Gamepasses.ExpAttribute, GamepassService.expMultiplier(player))
 	player:SetAttribute(Gamepasses.LuckAttribute, GamepassService.luckMultiplier(player))
+	-- Pass_<Key> = true kalau dimiliki (dibaca Shop UI)
+	for key in Gamepasses.Passes do
+		player:SetAttribute(Gamepasses.OwnedAttributePrefix .. key, GamepassService.owns(player, key))
+	end
 end
 
 local function refresh(player: Player)

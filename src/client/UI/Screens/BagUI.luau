@@ -1,21 +1,21 @@
 --!strict
--- Jendela Tas: level, isi, kapasitas level berikutnya, harga, tombol Upgrade.
--- Tombol hanya kirim intent; server yang cek koin & level.
+-- Jendela Upgrade Tas (dibuka dari tombol di header Inventory).
+-- Tombol hanya kirim intent; server yang cek uang & level.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
+local Style = require(script.Parent.Parent.Style)
 local Components = script.Parent.Parent.Components
 local Window = require(Components.Window)
-local Label = require(Components.Label)
+local Text = require(Components.Text)
 local Icon = require(Components.Icon)
-local StudButton = require(Components.StudButton)
-local Style = require(script.Parent.Parent.Style)
+local Button = require(Components.Button)
 
 export type Props = {
 	Open: any,
 	OnClose: () -> (),
-	-- dari PlayerView.derive
 	BagLevelText: any,
 	BagUsageText: any,
 	BagNextText: any,
@@ -27,61 +27,43 @@ export type Props = {
 }
 
 return function(scope: any, props: Props): Instance
+	local function line(order: number, text: any, weight: any?, size: number?, color: Color3?)
+		return Text(scope, {
+			LayoutOrder = order,
+			Text = text,
+			Weight = weight or "Regular",
+			TextSize = size or Theme.Sizes.TextBody,
+			Color = color,
+			XAlignment = Enum.TextXAlignment.Center,
+		})
+	end
+
 	return Window(scope, {
 		Name = "BagUI",
 		Title = UIText.BagTitle,
-		Palette = "Bag",
 		Open = props.Open,
 		OnClose = props.OnClose,
 		Scale = props.Scale,
-		Size = UDim2.fromOffset(440, 380),
+		Size = UDim2.fromOffset(300, 330),
 		Content = {
-			Style.padding(scope, 16),
-			scope:New("UIListLayout")({
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				HorizontalAlignment = Enum.HorizontalAlignment.Center,
-				VerticalAlignment = Enum.VerticalAlignment.Center,
-				Padding = UDim.new(0, 8),
-			}),
-			Icon(scope, {
-				Name = "BagIcon",
-				Asset = UIAssets.Icons.Bag,
-				Size = UDim2.fromOffset(72, 72),
-				LayoutOrder = 1,
-			}),
-			Label(scope, {
-				Name = "LevelText",
-				LayoutOrder = 2,
-				Size = UDim2.new(1, 0, 0, 38),
-				Text = props.BagLevelText,
-				MaxTextSize = 34,
-			}),
-			Label(scope, {
-				Name = "UsageText",
-				LayoutOrder = 3,
-				Size = UDim2.new(1, 0, 0, 26),
-				Text = props.BagUsageText,
-			}),
-			Label(scope, {
-				Name = "NextText",
-				LayoutOrder = 4,
-				Size = UDim2.new(1, 0, 0, 26),
-				Text = props.BagNextText,
-			}),
-			Label(scope, {
-				Name = "CostText",
-				LayoutOrder = 5,
-				Size = UDim2.new(1, 0, 0, 26),
-				Text = scope:Computed(function(use)
+			Style.list(scope, Enum.FillDirection.Vertical, 8, Enum.HorizontalAlignment.Center),
+			Icon(scope, { Asset = UIAssets.Icons.Bag, Size = UDim2.fromOffset(64, 64), LayoutOrder = 0 }),
+			line(1, props.BagLevelText, "Black", 18),
+			line(2, props.BagUsageText, "Regular", 14, Theme.Colors.TextDim),
+			line(3, props.BagNextText, "Regular", 14, Theme.Colors.TextDim),
+			line(
+				4,
+				scope:Computed(function(use)
 					return if use(props.BagIsMax) then "" else use(props.BagCostText)
 				end),
-			}),
-			StudButton(scope, {
+				"Bold",
+				14,
+				Theme.Colors.Money
+			),
+			Button(scope, {
 				Name = "UpgradeButton",
-				LayoutOrder = 6,
-				Size = UDim2.fromOffset(220, 58),
-				Variant = "Primary",
-				Icon = UIAssets.Icons.Upgrade,
+				LayoutOrder = 5,
+				Size = UDim2.fromOffset(180, 40),
 				Text = scope:Computed(function(use)
 					if use(props.BagIsMax) then
 						return UIText.BagMaxLevel

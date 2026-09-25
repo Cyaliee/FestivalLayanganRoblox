@@ -56,6 +56,13 @@ local function onPlayerAdded(player: Player)
 			inventory[key] = nil
 		end
 	end
+	-- Hotbar: buang key tidak valid / yang sudah habis
+	for index = #profile.Data.Hotbar, 1, -1 do
+		local key = profile.Data.Hotbar[index]
+		if not ItemKey.isValid(key) or (inventory[key] or 0) <= 0 then
+			table.remove(profile.Data.Hotbar, index)
+		end
+	end
 	local craft = profile.Data.ActiveCraft
 	if craft and Recipes[craft.RecipeId] == nil then
 		profile.Data.ActiveCraft = nil

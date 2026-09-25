@@ -1,16 +1,13 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local PlayerView = require(script.Parent.Parent.Parent.State.PlayerView)
-local Hotbar = require(script.Parent.Parent.Screens.Hotbar)
+local UI = script.Parent.Parent
+local PlayerView = require(UI.Parent.State.PlayerView)
+local Hotbar = require(UI.Screens.Hotbar)
 
 local controls = {
 	Bamboo = 12,
-	Glue = 4,
-	Paper = 4,
-	GoldenBamboo = 1,
 	KiteCommon = 2,
-	KiteRare = 1,
 	KiteEpic = 1,
 	KiteLegendary = 1,
 	Flying = true,
@@ -23,24 +20,19 @@ return {
 	story = function(props)
 		local scope = props.scope
 		local c = props.controls
-		local selected = scope:Value(nil) -- id item terpilih
-
+		local selected = scope:Value(nil)
 		local items = scope:Computed(function(use)
 			return PlayerView.hotbarItems({
 				Bamboo = use(c.Bamboo),
-				Glue = use(c.Glue),
-				Paper = use(c.Paper),
-				GoldenBamboo = use(c.GoldenBamboo),
 				["Kite@Common"] = use(c.KiteCommon),
-				["Kite@Rare"] = use(c.KiteRare),
 				["Kite@Epic"] = use(c.KiteEpic),
 				["Kite@Legendary"] = use(c.KiteLegendary),
-			})
+			}, { "Bamboo", "Kite@Common", "Kite@Epic", "Kite@Legendary" })
 		end)
-
 		local hotbar = Hotbar(scope, {
 			Items = items,
 			Selected = selected,
+			Open = scope:Value(true),
 			OnSelect = function(index)
 				local item = Fusion.peek(items)[index]
 				if item then
@@ -49,7 +41,7 @@ return {
 			end,
 			FlightVisible = c.Flying,
 			FlightProgress = c.FlightProgress,
-			FlightText = "Layangan (Epic) • 45s",
+			FlightText = "Layangan (Epic) - 42s",
 		})
 		hotbar.Parent = props.target
 	end,

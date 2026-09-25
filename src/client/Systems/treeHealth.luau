@@ -45,8 +45,8 @@ local function createBar(tree: Instance): Bar?
 		[Children] = {
 			ProgressBar(scope, {
 				Progress = progress,
-				Palette = "Green",
-				Size = UDim2.new(1, 0, 1, -6),
+				Size = UDim2.new(1, 0, 0, 12),
+				FillColor = Color3.fromRGB(80, 225, 61),
 			}),
 		},
 	})

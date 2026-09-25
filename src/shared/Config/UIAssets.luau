@@ -1,47 +1,60 @@
 --!strict
 --[[
-	GAMBAR UI — ISI DI SINI.
-	Image  = asset id, mis. "rbxassetid://1234567890". Kosong ("") = pakai Fallback.
-	Fallback = teks/emoji yang tampil selama Image masih kosong.
-
-	Buttons: skin ImageButton per warna tombol (opsional). Kosong = tombol digambar kode
-	(gaya Studded: warna solid + stud + outline + bayangan). Kalau diisi, gambar dipakai sebagai skin tombol dan
-	SliceCenter (opsional) dipakai untuk 9-slice supaya tidak gepeng.
+	GAMBAR UI - ISI DI SINI. Semua ikon memakai gambar (tidak ada emoji).
+	Image = asset id, mis. "rbxassetid://1234567890".
+	Label = teks singkat yang tampil SELAMA Image masih kosong (placeholder untuk testing).
 ]]
 
-export type IconAsset = { Image: string, Fallback: string }
-export type ButtonSkin = { Image: string, SliceCenter: Rect? }
+export type IconAsset = { Image: string, Label: string }
+
+local function icon(label: string, image: string?): IconAsset
+	return table.freeze({ Image = image or "", Label = label })
+end
 
 local Icons: { [string]: IconAsset } = {
-	Coin = { Image = "", Fallback = "🪙" },
-	Bamboo = { Image = "", Fallback = "🎋" },
-	Kite = { Image = "", Fallback = "🪁" },
-	Bag = { Image = "", Fallback = "🎒" },
-	Close = { Image = "", Fallback = "✖" },
-	Upgrade = { Image = "", Fallback = "⬆" },
-	Clock = { Image = "", Fallback = "⏱" },
-	Lock = { Image = "", Fallback = "🔒" },
-	Wallet = { Image = "", Fallback = "👛" },
+	-- Sidebar
+	Shop = icon("Shop"),
+	Inventory = icon("Inv"),
+	Settings = icon("Set"),
+	Info = icon("Info"),
+	-- Tombol panah (sidebar & hotbar toggle)
+	ArrowLeft = icon("<"),
+	ArrowRight = icon(">"),
+	ArrowDown = icon("v"),
+	ArrowUp = icon("^"),
+	Close = icon("X"),
+	-- Umum
+	Coin = icon("Rp"),
+	Wallet = icon("Rp"),
+	Bag = icon("Tas"),
+	Upgrade = icon("Up"),
+	Clock = icon("s"),
+	Lock = icon("Lock"),
+	Booster = icon("Emas"),
 }
 
--- Ikon per item. Key = Id di Config/Items (item ber-rarity memakai ikon yang sama, warna slot beda).
+-- Ikon per item. Key = Id di Config/Items (semua rarity pakai ikon yang sama, warna bingkai beda).
 local Items: { [string]: IconAsset } = {
-	Bamboo = { Image = "", Fallback = "🎋" },
-	GoldenBamboo = { Image = "", Fallback = "🌟" },
-	Glue = { Image = "", Fallback = "🧴" },
-	SuperGlue = { Image = "", Fallback = "🧪" },
-	Paper = { Image = "", Fallback = "📜" },
-	ParachuteCloth = { Image = "", Fallback = "🪂" },
-	Kite = { Image = "", Fallback = "🪁" },
-	Naga = { Image = "", Fallback = "🐉" },
-	Axe = { Image = "", Fallback = "🪓" }, -- slot tool hotbar
+	Bamboo = icon("Bambu"),
+	GoldenBamboo = icon("Emas"),
+	Glue = icon("Lem"),
+	SuperGlue = icon("Lem+"),
+	Paper = icon("Kertas"),
+	ParachuteCloth = icon("Kain"),
+	Kite = icon("Layang"),
+	Naga = icon("Naga"),
+	Axe = icon("Kapak"), -- slot tool hotbar
 }
 
--- Key = nama palette di UITheme.Palettes (Green, Blue, Close, Orange, ...). Kosong = gaya Studded dari kode.
-local Buttons: { [string]: ButtonSkin } = {}
+-- Gambar kartu gamepass di Shop (key = Config/Gamepasses)
+local Gamepasses: { [string]: IconAsset } = {
+	VIP = icon("VIP"),
+	X2Exp = icon("2x EXP"),
+	Luck2 = icon("2x Luck"),
+}
 
 return table.freeze({
 	Icons = table.freeze(Icons),
 	Items = table.freeze(Items),
-	Buttons = table.freeze(Buttons),
+	Gamepasses = table.freeze(Gamepasses),
 })

@@ -1,6 +1,7 @@
 --!strict
 -- Konfigurasi DataStore & nilai awal data pemain.
 local Items = require(script.Parent.Items)
+local SettingsConfig = require(script.Parent.Settings)
 
 local PlayerData = {}
 
@@ -25,6 +26,10 @@ export type Data = {
 	ActiveCraft: { RecipeId: string, EndsAt: number, Boosted: boolean? }?,
 	-- Item key Layangan Naga yang sedang dipasang di kavling (nil = tidak ada)
 	PlacedDragon: string?,
+	-- Item key yang dipasang pemain ke hotbar (urut slot, setelah slot tool)
+	Hotbar: { string },
+	-- Pengaturan pemain (Config/Settings)
+	Settings: { [string]: any },
 }
 
 -- Template ProfileStore. Reconcile() akan mengisi key baru untuk pemain lama.
@@ -36,7 +41,13 @@ function PlayerData.buildTemplate(): Data
 			inventory[id] = 0
 		end
 	end
+	local settings = {}
+	for key, setting in SettingsConfig.Settings do
+		settings[key] = setting.Default
+	end
 	return {
+		Hotbar = {},
+		Settings = settings,
 		Coins = PlayerData.StartingCoins,
 		Level = PlayerData.StartingLevel,
 		Exp = PlayerData.StartingExp,

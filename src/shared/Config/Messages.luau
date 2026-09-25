@@ -39,14 +39,17 @@ return table.freeze({
 	-- Level
 	LevelUp = "Naik Level! Sekarang Level %d",
 	-- Bambu Emas
-	GoldenDrop = "✨ Kamu menemukan Bambu Emas!",
-	GoldenTreeSpawned = "🌟 Pohon Bambu Emas muncul di Hutan Bambu!",
-	GoldenTreeFelled = "🌟 %s menebang Pohon Bambu Emas!",
+	GoldenDrop = "Kamu menemukan Bambu Emas!",
+	GoldenTreeSpawned = "Pohon Bambu Emas muncul di Hutan Bambu!",
+	GoldenTreeFelled = "%s menebang Pohon Bambu Emas!",
 	-- Rarity & Naga
 	CraftDoneRarity = "%s selesai!",
-	LegendaryCrafted = "✨ %s merakit %s!",
-	DragonPlaced = "🐉 %s berhasil menerbangkan Layangan Naga!",
+	LegendaryCrafted = "%s merakit %s!",
+	DragonPlaced = "%s berhasil menerbangkan Layangan Naga!",
 	DragonLowered = "Layangan Naga diturunkan ke tas.",
 	NoDragon = "Kamu belum punya Layangan Naga.",
 	NoBooster = "Bambu Emas tidak cukup untuk booster.",
+	-- Hotbar
+	HotbarFull = "Hotbar penuh! Lepas item lain dulu.",
+	DragonNotHotbar = "Layangan Naga dipasang di Meja Rakit (tombol F).",
 })

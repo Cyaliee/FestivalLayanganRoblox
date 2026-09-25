@@ -12,6 +12,8 @@ local peek = Fusion.peek
 local UIState = {}
 
 UIState.Scale = scope:Value(1)
+UIState.SidebarOpen = scope:Value(true)
+UIState.HotbarOpen = scope:Value(true)
 UIState.SelectedItem = scope:Value(nil :: string?) -- id item/tool terpilih di hotbar
 UIState.ServerTime = scope:Value(0) -- workspace:GetServerTimeNow(), diperbarui system clock
 
@@ -43,6 +45,16 @@ function UIState.open(name: string)
 	end
 	for other, value in UIState.Open do
 		value:set(other == name)
+	end
+end
+
+-- Buka kalau tertutup, tutup kalau terbuka (tombol sidebar)
+function UIState.toggle(name: string)
+	local value = UIState.Open[name]
+	if value and peek(value) then
+		value:set(false)
+	else
+		UIState.open(name)
 	end
 end
 

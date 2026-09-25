@@ -1,7 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local CraftUI = require(script.Parent.Parent.Screens.CraftUI)
+local UI = script.Parent.Parent
+local CraftUI = require(UI.Screens.CraftUI)
 
 local controls = {
 	TableLevel = 1,
@@ -11,9 +12,9 @@ local controls = {
 	GoldenBamboo = 3,
 	ParachuteCloth = 10,
 	SuperGlue = 5,
-	Luck = 1, -- 2 = gamepass Luck
+	Luck = 1,
 	DragonActive = false,
-	Crafting = false, -- tampilkan status sedang merakit
+	Crafting = false,
 	RemainingSeconds = 4,
 }
 
@@ -23,13 +24,9 @@ return {
 	story = function(props)
 		local scope = props.scope
 		local c = props.controls
-		local open = scope:Value(true)
-
 		local window = CraftUI(scope, {
-			Open = open,
-			OnClose = function()
-				open:set(false)
-			end,
+			Open = scope:Value(true),
+			OnClose = function() end,
 			Inventory = scope:Computed(function(use)
 				return {
 					Bamboo = use(c.Bamboo),
@@ -48,11 +45,11 @@ return {
 				return 1000 + use(c.RemainingSeconds)
 			end),
 			ServerTime = 1000,
+			Luck = c.Luck,
+			DragonActive = c.DragonActive,
 			OnCraft = function(recipeId, useBooster)
 				print("[Story] Rakit", recipeId, "booster:", useBooster)
 			end,
-			Luck = c.Luck,
-			DragonActive = c.DragonActive,
 		})
 		window.Parent = props.target
 	end,

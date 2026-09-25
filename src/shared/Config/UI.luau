@@ -6,6 +6,10 @@ return table.freeze({
 	AnnouncementDuration = 5, -- detik per pengumuman global
 	-- ScreenGui yang bisa dibuka server lewat bridge OpenUI. Tambah di fase berikutnya.
 	OpenableScreens = table.freeze({
+		Shop = true,
+		Inventory = true,
+		SettingsUI = true,
+		InfoUI = true,
 		UpgradeUI = true,
 		BagUI = true,
 		CraftUI = true,

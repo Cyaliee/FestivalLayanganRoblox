@@ -21,25 +21,19 @@ export type HotbarItem = { Id: string, Count: number, IsTool: boolean? }
 
 local PlayerView = {}
 
--- Item di hotbar: count > 0, kategori yang diizinkan, urut Order, maks SlotCount
-function PlayerView.hotbarItems(inventory: { [string]: number }): { HotbarItem }
+-- Isi hotbar: slot tool (kapak) dulu, lalu item yang dipasang pemain dari Inventory (count > 0)
+function PlayerView.hotbarItems(inventory: { [string]: number }, hotbar: { string }?): { HotbarItem }
 	local tools: { HotbarItem } = {}
 	for _, toolId in HotbarConfig.Tools do
 		table.insert(tools, { Id = toolId, Count = 0, IsTool = true })
 	end
 
-	local list: { HotbarItem } = {}
-	for key, count in inventory do
-		local def = ItemKey.def(key)
-		if def and count > 0 and HotbarConfig.Categories[def.Category] then
+	local list: { HotbarItem } = tools
+	for _, key in hotbar or {} do
+		local count = inventory[key] or 0
+		if count > 0 and ItemKey.isValid(key) then
 			table.insert(list, { Id = key, Count = count })
 		end
-	end
-	table.sort(list, function(a, b)
-		return ItemKey.sortValue(a.Id) < ItemKey.sortValue(b.Id)
-	end)
-	for index = #tools, 1, -1 do
-		table.insert(list, 1, tools[index])
 	end
 	while #list > HotbarConfig.SlotCount do
 		table.remove(list)
@@ -179,7 +173,15 @@ function PlayerView.derive(scope: any, raw: any)
 			return text
 		end),
 		HotbarItems = computed(function(use)
-			return PlayerView.hotbarItems(use(raw.Inventory))
+			return PlayerView.hotbarItems(use(raw.Inventory), use(raw.Hotbar))
+		end),
+		InventoryBagText = computed(function(use)
+			return string.format(
+				UIText.InventoryBag,
+				use(raw.BagLevel),
+				Format.number(use(bagUsed)),
+				Format.number(use(bagCapacity))
+			)
 		end),
 	}
 end

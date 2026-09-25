@@ -7,7 +7,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Matter = require(ReplicatedStorage.Packages.Matter)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
-local Label = require(script.Parent.Parent.UI.Components.Label)
+local Text = require(script.Parent.Parent.UI.Components.Text)
+local PlayerState = require(script.Parent.Parent.State.PlayerState)
 
 local peek = Fusion.peek
 local Children = Fusion.Children
@@ -30,7 +31,15 @@ local function createTag(player: Player): Tag
 		ResetOnSpawn = false,
 		Parent = Players.LocalPlayer:WaitForChild("PlayerGui"),
 		[Children] = {
-			Label(scope, { Name = "NameText", Text = text, MaxTextSize = 22 }),
+			Text(scope, {
+				Name = "NameText",
+				Text = text,
+				Weight = "Bold",
+				TextSize = 16,
+				XAlignment = Enum.TextXAlignment.Center,
+				Size = UDim2.fromScale(1, 1),
+				Outline = true,
+			}),
 		},
 	})
 	return { scope = scope, text = text, adornee = adornee }
@@ -41,7 +50,11 @@ local function nametags(_world)
 		return
 	end
 	local seen: { [Player]: boolean } = {}
+	local enabled = peek(PlayerState.Settings).ShowNametags ~= false
 	for _, player in Players:GetPlayers() do
+		if not enabled then
+			break
+		end
 		local head = player.Character and player.Character:FindFirstChild("Head")
 		if head == nil then
 			continue

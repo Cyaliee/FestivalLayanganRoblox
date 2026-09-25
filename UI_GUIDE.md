@@ -1,78 +1,67 @@
 # Panduan UI — Festival Layangan
 
-Mulai Fase 2, **semua UI layar dibuat oleh kode (Fusion 0.3)** dengan gaya **Studded**
-(meniru kit StuddedUI): warna solid + tekstur stud transparan, outline & bayangan bawah
-berwarna gelap dari warna yang sama, teks FredokaOne putih ber-outline hitam, dan animasi spring.
-Kamu tidak perlu menyusun UI di StarterGui lagi. Yang kamu isi hanyalah **gambar** dan (opsional) **tema**.
+Semua UI layar dibuat oleh kode (**Fusion 0.3**) dengan tone **gelap metalik**, mengikuti script
+DonationMenu/Hotbar dan referensi Inventory: panel gelap (25,25,25), bar (20,18,26) transparan tipis,
+tombol abu-abu dengan gradient metalik, stroke putih tipis, font Gotham, slot 44px.
+Skala otomatis mengikuti tinggi layar (`/1080`, dibatasi 0.6–1.2) x pilihan **Ukuran UI** di Setting.
 
-> Hapus ScreenGui lama buatan Studio (`HUD`, `Hotbar`, `UpgradeUI`, `ShopUI`, `SellUI`, `CraftUI`,
-> `EventBanner`) dan folder `ReplicatedStorage/UITemplates`, supaya tidak dobel dengan UI dari kode.
+**Tidak ada emoji.** Semua ikon memakai gambar dari `Config/UIAssets.luau`; selama gambar kosong
+tampil teks placeholder kecil (mis. "Bambu") supaya layout tetap bisa dites.
 
-## 1. Gambar — `src/shared/Config/UIAssets.luau`
-
-| Bagian | Isi | Kalau kosong |
+## Tata letak
+| Elemen | Posisi | Keterangan |
 |---|---|---|
-| `Icons.Coin`, `Bamboo`, `Kite`, `Bag`, `Close`, `Upgrade` | ikon di HUD & tombol | tampil emoji `Fallback` |
-| `Items.<ItemId>` | ikon item di hotbar/toko (Id dari `Config/Items.luau`; semua rarity pakai ikon yang sama, warna slot beda) | tampil emoji `Fallback` |
-| `Buttons.<Palette>` | skin **ImageButton** per warna tombol (`Green`, `Blue`, `Close`, `Orange`, ...) — opsional | tombol digambar kode (gaya Studded) |
+| Kartu profil | kiri bawah | avatar bulat, `Lv. N`, kotak nama + uang (`Rp. ...`), bar EXP |
+| Sidebar | kiri tengah | Shop, Inventory, Setting, Information + tombol `<` / `>` sembunyi/tampil |
+| Hotbar | bawah tengah | slot 1-9 (slot 1 = kapak), tombol paling ujung = sembunyi/tampil |
+| Notifikasi | atas tengah | meluncur dari atas |
+| Pengumuman global | atas tengah (di bawah notifikasi) | stroke berwarna |
 
-Format asset: `"rbxassetid://1234567890"` (upload gambar lewat Asset Manager / Creator Dashboard,
-lalu copy ID-nya).
-
-Skin tombol boleh pakai 9-slice supaya tidak gepeng saat ukurannya berubah:
-```lua
-Primary = { Image = "rbxassetid://123", SliceCenter = Rect.new(24, 24, 104, 104) },
-```
-
-## 2. Tema — `src/shared/Config/UITheme.luau`
-
-| Bagian | Isi |
+## Jendela
+| Jendela | Dibuka dari |
 |---|---|
-| `Font`, `TitleFont` | font teks & judul |
-| `Colors` | teks, outline teks, backdrop |
-| `Palettes` | `{ Surface, Dark }` — warna dari kit (Red, Green, Blue, Cyan, Teal, Orange, Gold, Purple, Pink, ...) |
-| `Roles` | warna per fungsi: tombol utama, koin, bambu, tas, tas penuh, slot, jendela upgrade, ... |
-| `Profile` | kartu profil kiri bawah: palette panel, lencana level, kapsul uang, ukuran |
-| `Studs` | tekstur stud (asset dari kit), ukuran tile, transparansi di tombol & jendela |
-| `Sizes` | tebal outline, radius sudut, tinggi bayangan, ukuran pill/slot/toast |
-| `Animation` | skala hover/tekan, kecepatan & damping spring, posisi toast |
-| `ReferenceResolution`, `MinScale`, `MaxScale` | UI diskalakan otomatis sesuai layar |
+| Shop (gamepass) | Sidebar |
+| Inventory (klik item = pasang/lepas di hotbar) | Sidebar |
+| Tas (upgrade) | tombol di header Inventory |
+| Setting | Sidebar |
+| Information | Sidebar |
+| Pasar (Pengepul/Toko/Tengkulak) | prompt NPC |
+| Rakit Layangan | prompt MejaRakit |
+| Meja Rakit (upgrade) | Papan Nama kavling |
 
-## 3. Teks — `src/shared/Config/UIText.luau`
-Semua tulisan di UI (format level, EXP, tas, judul jendela, pemisah ribuan).
+## Yang kamu isi
+| File | Isi |
+|---|---|
+| `Config/UIAssets.luau` | `Icons` (sidebar, panah, uang, tas, dll.), `Items` (ikon per item), `Gamepasses` (gambar kartu Shop) |
+| `Config/UITheme.luau` | warna, gradient metalik, font, ukuran slot/bar, animasi, skala |
+| `Config/UIText.luau` | semua tulisan |
+| `Config/Info.luau` | isi jendela Information |
+| `Config/Settings.luau` | daftar pengaturan (Toggle / Choice) |
+| `Config/Gamepasses.luau` | Id gamepass, nama, deskripsi |
 
-## 4. Preview di UI Labs
-1. Install plugin **UI Labs** dari Creator Store.
-2. Jalankan `rojo serve` dan Connect (tidak perlu Play).
-3. Buka UI Labs → storybook **Festival Layangan**. Story yang tersedia:
-   `StudButton`, `ProgressBar`, `StatPill`, `HotbarSlot`, `Toast`, `Window`, `HUD`, `Hotbar`,
-   `UpgradeUI`, `BagUI`, `ShopUI`, `CraftUI`, `ProfileCard`.
-   Ubah nilai di panel Controls untuk mencoba data mock.
+Musik latar (opsional): taruh `Sound` bernama **Music** di `SoundService`; saklar Musik di Setting mengaturnya.
 
-## 5. Yang masih dibuat di Studio (world UI)
-
-| Path | Tipe | Dipakai untuk |
-|---|---|---|
-| `Workspace/Plots/<Plot>/PapanNama/**/OwnerText` | TextLabel di SurfaceGui (opsional) | "Kavling Kosong" / "Kavling <Nama>" |
+## Preview di UI Labs
+Storybook **Festival Layangan**: `Button`, `ItemSlot`, `Toast`, `ProfileCard`, `Sidebar`, `Hotbar`,
+`Inventory`, `ShopUI`, `MarketUI`, `CraftUI`, `SettingsUI`, `InfoUI`, `UpgradeUI`.
 
 ## Struktur kode UI
 ```
 src/client/
-  State/PlayerView.luau    data mentah -> teks/progress (dipakai game & story)
-  State/PlayerState.luau   data pemain dari server (Fusion Value)
-  State/UIState.luau       screen terbuka, slot terpilih, notifikasi, skala layar
-  UI/Style.luau            palette, outline, sudut, stud, padding
-  UI/Components/           Block (dasar Studded), Label, Icon, Panel, StudButton, ProgressBar,
-                           StatPill, HotbarSlot, Toast, Window, ListRow, ScrollList, ProfileCard
-  Systems/nametags         nametag "DisplayName | Lv.xxx" di atas kepala (Fusion, client)
-  Systems/craftTimers      billboard countdown di atas MejaRakit (Fusion, client)
-  Systems/treeHealth       bar HP pohon bambu (Fusion, client)
-  UI/Screens/              HUD, Hotbar, UpgradeUI, BagUI, ShopUI (per NPC), CraftUI, Announcement
-  UI/Stories/              story UI Labs
-  Controllers/UIController memasang ScreenGui + bridge OpenUI/Notify
+  State/PlayerView.luau     data mentah -> teks/progress/isi hotbar
+  State/PlayerState.luau    data pemain dari server (Fusion Value)
+  State/UIState.luau        jendela terbuka, sidebar/hotbar buka-tutup, notifikasi, skala
+  UI/Style.luau             sudut, stroke, gradient metalik, padding, list
+  UI/Components/            Text, Icon, Button, Panel, Window, ProgressBar, ItemSlot,
+                            Toast, Toggle, ScrollList, ProfileCard
+  UI/Screens/               HUD, Sidebar, Hotbar, Inventory, BagUI, ShopUI, MarketUI,
+                            CraftUI, UpgradeUI, SettingsUI, InfoUI, Announcement
+  Controllers/UIController  memasang semua ScreenGui + bridge
+  Controllers/SettingsController  musik
+  Systems/craftTimers, treeHealth, nametags   billboard di dunia 3D
 ```
 
-## Memakai gambar dari kit StuddedUI
-Gambar ikon di kit bisa dipakai ulang: di Studio pilih ImageLabel `Artwork`/`Icon` di kit,
-copy properti `Image` (mis. `rbxassetid://129096757816558`), lalu tempel ke `UIAssets.luau`.
-Kit-nya sendiri tidak perlu dimasukkan ke game.
+## World UI (dibuat di Studio)
+| Path | Tipe | Dipakai untuk |
+|---|---|---|
+| `Workspace/Plots/<Plot>/PapanNama/**/OwnerText` | TextLabel di SurfaceGui (opsional) | "Kavling Kosong" / "Kavling <Nama>" |
