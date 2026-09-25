@@ -41,14 +41,14 @@ local function makeSnapshot(data: DataService.Data)
 		Coins = data.Coins,
 		Level = data.Level,
 		Exp = data.Exp,
-		BagTier = data.BagTier,
+		BagLevel = data.BagLevel,
 		TableLevel = data.TableLevel,
 		Inventory = inventory,
 	}
 end
 
 local function makeSignature(snapshot): string
-	local parts = { snapshot.Coins, snapshot.Level, snapshot.Exp, snapshot.BagTier, snapshot.TableLevel }
+	local parts = { snapshot.Coins, snapshot.Level, snapshot.Exp, snapshot.BagLevel, snapshot.TableLevel }
 	for _, id in itemIds do
 		table.insert(parts, snapshot.Inventory[id])
 	end

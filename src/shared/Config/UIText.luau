@@ -16,6 +16,15 @@ return table.freeze({
 	UpgradeButton = "Upgrade",
 	ComingSoon = "Segera Hadir",
 
+	BagTitle = "Tas",
+	BagLevel = "Tas Level %d",
+	BagUsage = "Isi: %s / %s",
+	BagNext = "Level %d: %s slot",
+	BagMaxLevel = "Level Maksimal!",
+	BagCost = "Harga: %s",
+	BagUpgradeButton = "Upgrade",
+	BagNotEnoughCoins = "Koin Kurang",
+
 	ThousandSeparator = ".",
 	-- Singkatan angka besar, dari terbesar
 	CompactSuffixes = table.freeze({

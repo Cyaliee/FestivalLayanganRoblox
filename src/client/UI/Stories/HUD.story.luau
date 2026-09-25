@@ -10,7 +10,7 @@ local controls = {
 	Coins = 1250,
 	Bamboo = 12,
 	Kites = 3,
-	BagTier = 1,
+	BagLevel = 1,
 	Notification = "Kavling berhasil diklaim!",
 	ShowNotification = true,
 }
@@ -26,7 +26,7 @@ return {
 			Coins = c.Coins,
 			Level = c.Level,
 			Exp = c.Exp,
-			BagTier = c.BagTier,
+			BagLevel = c.BagLevel,
 			TableLevel = 1,
 			Inventory = scope:Computed(function(use)
 				return { Bamboo = use(c.Bamboo), KiteBiasa = use(c.Kites) }
@@ -34,6 +34,9 @@ return {
 		})
 
 		local hud = HUD(scope, {
+			OnBagClick = function()
+				print("[Story] Kapsul tas diklik")
+			end,
 			LevelText = view.LevelText,
 			ExpProgress = view.ExpProgress,
 			ExpText = view.ExpText,

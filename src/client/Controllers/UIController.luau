@@ -20,6 +20,7 @@ local Screens = script.Parent.Parent.UI.Screens
 local HUD = require(Screens.HUD)
 local Hotbar = require(Screens.Hotbar)
 local UpgradeUI = require(Screens.UpgradeUI)
+local BagUI = require(Screens.BagUI)
 
 local Children = Fusion.Children
 
@@ -93,6 +94,9 @@ function UIController.start()
 			NotificationText = UIState.NotificationText,
 			NotificationVisible = UIState.NotificationVisible,
 			Scale = UIState.Scale,
+			OnBagClick = function()
+				UIState.open("BagUI")
+			end,
 		})
 	)
 
@@ -121,6 +125,29 @@ function UIController.start()
 			UpgradeText = UIText.ComingSoon, -- Fase 4
 			UpgradeDisabled = true, -- Fase 4
 			OnUpgrade = function() end,
+			Scale = UIState.Scale,
+		})
+	)
+
+	local bagUpgradeBridge = Net.bridge(NetworkConfig.Bridges.RequestBagUpgrade)
+	mount(
+		"BagUI",
+		10,
+		BagUI(scope, {
+			Open = UIState.Open.BagUI,
+			OnClose = function()
+				UIState.close("BagUI")
+			end,
+			BagLevelText = view.BagLevelText,
+			BagUsageText = view.BagUsageText,
+			BagNextText = view.BagNextText,
+			BagCostText = view.BagCostText,
+			BagIsMax = view.BagIsMax,
+			BagCanAfford = view.BagCanAfford,
+			-- Hanya intent; server yang validasi koin & level
+			OnUpgrade = function()
+				bagUpgradeBridge:Fire({})
+			end,
 			Scale = UIState.Scale,
 		})
 	)

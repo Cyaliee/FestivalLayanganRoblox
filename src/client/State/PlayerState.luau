@@ -16,13 +16,13 @@ PlayerState.Loaded = scope:Value(false)
 PlayerState.Coins = scope:Value(defaults.Coins)
 PlayerState.Level = scope:Value(defaults.Level)
 PlayerState.Exp = scope:Value(defaults.Exp)
-PlayerState.BagTier = scope:Value(defaults.BagTier)
+PlayerState.BagLevel = scope:Value(defaults.BagLevel)
 PlayerState.TableLevel = scope:Value(defaults.TableLevel)
 PlayerState.Inventory = scope:Value(defaults.Inventory)
 
 PlayerState.view = PlayerView.derive(scope, PlayerState)
 
-local NUMBER_FIELDS = { "Coins", "Level", "Exp", "BagTier", "TableLevel" }
+local NUMBER_FIELDS = { "Coins", "Level", "Exp", "BagLevel", "TableLevel" }
 
 local function isNumber(value: any): boolean
 	return type(value) == "number" and value == value

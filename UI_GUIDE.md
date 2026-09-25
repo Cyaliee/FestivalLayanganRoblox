@@ -44,7 +44,8 @@ Semua tulisan di UI (format level, EXP, tas, judul jendela, pemisah ribuan).
 1. Install plugin **UI Labs** dari Creator Store.
 2. Jalankan `rojo serve` dan Connect (tidak perlu Play).
 3. Buka UI Labs → storybook **Festival Layangan**. Story yang tersedia:
-   `StudButton`, `ProgressBar`, `StatPill`, `HotbarSlot`, `Toast`, `Window`, `HUD`, `Hotbar`, `UpgradeUI`.
+   `StudButton`, `ProgressBar`, `StatPill`, `HotbarSlot`, `Toast`, `Window`, `HUD`, `Hotbar`,
+   `UpgradeUI`, `BagUI`.
    Ubah nilai di panel Controls untuk mencoba data mock.
 
 ## 5. Yang masih dibuat di Studio (world UI)
@@ -62,7 +63,7 @@ src/client/
   UI/Style.luau            palette, outline, sudut, stud, padding
   UI/Components/           Block (dasar Studded), Label, Icon, Panel, StudButton, ProgressBar,
                            StatPill, HotbarSlot, Toast, Window
-  UI/Screens/              HUD, Hotbar, UpgradeUI
+  UI/Screens/              HUD, Hotbar, UpgradeUI, BagUI
   UI/Stories/              story UI Labs
   Controllers/UIController memasang ScreenGui + bridge OpenUI/Notify
 ```

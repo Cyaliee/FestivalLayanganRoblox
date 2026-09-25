@@ -6,5 +6,6 @@ return table.freeze({
 	-- ScreenGui yang bisa dibuka server lewat bridge OpenUI. Tambah di fase berikutnya.
 	OpenableScreens = table.freeze({
 		UpgradeUI = true,
+		BagUI = true,
 	}),
 })

@@ -35,6 +35,11 @@ local function onPlayerAdded(player: Player)
 
 	profile:AddUserId(player.UserId) -- GDPR
 	profile:Reconcile() -- isi key baru dari template
+	-- Migrasi: field lama BagTier -> BagLevel
+	if profile.Data.BagTier ~= nil then
+		profile.Data.BagLevel = profile.Data.BagTier
+		profile.Data.BagTier = nil
+	end
 
 	profile.OnSessionEnd:Connect(function()
 		profiles[player] = nil

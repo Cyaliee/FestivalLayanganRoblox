@@ -29,6 +29,7 @@ export type Props = {
 	NotificationText: any,
 	NotificationVisible: any,
 	Scale: any?,
+	OnBagClick: (() -> ())?,
 }
 
 local BADGE_SIZE = 64
@@ -115,6 +116,7 @@ return function(scope: any, props: Props): Instance
 						Palette = scope:Computed(function(use)
 							return if use(props.BagFull) then "BagFull" else "Bag"
 						end),
+						OnActivated = props.OnBagClick,
 						LayoutOrder = 5,
 					}),
 				},

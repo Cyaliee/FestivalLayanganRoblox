@@ -8,4 +8,8 @@ return table.freeze({
 	PlotClaimed = "Kavling berhasil diklaim!",
 	TooFar = "Kamu terlalu jauh.",
 	TooFast = "Pelan-pelan!",
+	BagFull = "Tas Penuh!",
+	BagUpgraded = "Tas naik ke Level %d!",
+	BagMaxLevel = "Tas sudah level maksimal!",
+	NotEnoughCoins = "Koin tidak cukup!",
 })

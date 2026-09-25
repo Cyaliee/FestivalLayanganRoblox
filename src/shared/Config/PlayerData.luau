@@ -11,14 +11,14 @@ PlayerData.StoreName = "PlayerData_v1"
 PlayerData.StartingCoins = 0
 PlayerData.StartingLevel = 1
 PlayerData.StartingExp = 0
-PlayerData.StartingBagTier = 1 -- index ke Config/Bags (Fase 3). 1 = Kresek
+PlayerData.StartingBagLevel = 1 -- level tas awal (lihat Config/Bags)
 PlayerData.StartingTableLevel = 1
 
 export type Data = {
 	Coins: number,
 	Level: number,
 	Exp: number,
-	BagTier: number,
+	BagLevel: number,
 	TableLevel: number,
 	Inventory: { [string]: number },
 }
@@ -33,7 +33,7 @@ function PlayerData.buildTemplate(): Data
 		Coins = PlayerData.StartingCoins,
 		Level = PlayerData.StartingLevel,
 		Exp = PlayerData.StartingExp,
-		BagTier = PlayerData.StartingBagTier,
+		BagLevel = PlayerData.StartingBagLevel,
 		TableLevel = PlayerData.StartingTableLevel,
 		Inventory = inventory,
 	}

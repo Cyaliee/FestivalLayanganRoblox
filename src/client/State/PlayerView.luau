@@ -3,7 +3,7 @@
 	Turunkan nilai tampilan (teks, progress, dll) dari data mentah pemain.
 	Dipakai PlayerState (data asli dari server) dan story UI Labs (data mock).
 
-	raw: { Coins, Level, Exp, BagTier, TableLevel, Inventory } — masing-masing boleh Value atau konstanta
+	raw: { Coins, Level, Exp, BagLevel, TableLevel, Inventory } — masing-masing boleh Value atau konstanta
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -45,7 +45,10 @@ function PlayerView.derive(scope: any, raw: any)
 		return Bag.used(use(raw.Inventory))
 	end)
 	local bagCapacity = computed(function(use)
-		return Bag.capacity(use(raw.BagTier))
+		return Bag.capacity(use(raw.BagLevel))
+	end)
+	local bagPrice = computed(function(use)
+		return Bag.upgradePrice(use(raw.BagLevel))
 	end)
 
 	return {
@@ -89,6 +92,33 @@ function PlayerView.derive(scope: any, raw: any)
 		end),
 		BagFull = computed(function(use)
 			return use(bagUsed) >= use(bagCapacity)
+		end),
+		BagLevel = computed(function(use)
+			return use(raw.BagLevel)
+		end),
+		BagLevelText = computed(function(use)
+			return string.format(UIText.BagLevel, use(raw.BagLevel))
+		end),
+		BagUsageText = computed(function(use)
+			return string.format(UIText.BagUsage, Format.number(use(bagUsed)), Format.number(use(bagCapacity)))
+		end),
+		BagNextText = computed(function(use)
+			local level = use(raw.BagLevel)
+			if use(bagPrice) == nil then
+				return UIText.BagMaxLevel
+			end
+			return string.format(UIText.BagNext, level + 1, Format.number(Bag.capacity(level + 1)))
+		end),
+		BagCostText = computed(function(use)
+			local price = use(bagPrice)
+			return string.format(UIText.BagCost, if price then Format.number(price) else "-")
+		end),
+		BagIsMax = computed(function(use)
+			return use(bagPrice) == nil
+		end),
+		BagCanAfford = computed(function(use)
+			local price = use(bagPrice)
+			return price ~= nil and use(raw.Coins) >= price
 		end),
 		TableLevel = computed(function(use)
 			return use(raw.TableLevel)
