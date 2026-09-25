@@ -1,0 +1,24 @@
+--!strict
+-- Hotbar custom (menggantikan Backpack bawaan Roblox).
+
+return table.freeze({
+	SlotCount = 9,
+	-- Kategori item (Config/Items) yang tampil di hotbar
+	Categories = table.freeze({
+		Material = true,
+		Kite = true,
+	}),
+	-- Tombol keyboard per slot, urut dari slot 1
+	KeyCodes = table.freeze({
+		Enum.KeyCode.One,
+		Enum.KeyCode.Two,
+		Enum.KeyCode.Three,
+		Enum.KeyCode.Four,
+		Enum.KeyCode.Five,
+		Enum.KeyCode.Six,
+		Enum.KeyCode.Seven,
+		Enum.KeyCode.Eight,
+		Enum.KeyCode.Nine,
+	}),
+	DisableDefaultBackpack = true,
+})

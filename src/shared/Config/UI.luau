@@ -1,13 +1,10 @@
 --!strict
--- Angka-angka tampilan UI (bukan layout; layout ada di Studio).
+-- Perilaku UI (bukan tampilan; tampilan ada di UITheme).
 
 return table.freeze({
 	NotificationDuration = 2.5, -- detik
-	-- Nama ScreenGui di StarterGui yang bisa dibuka lewat bridge OpenUI
+	-- ScreenGui yang bisa dibuka server lewat bridge OpenUI. Tambah di fase berikutnya.
 	OpenableScreens = table.freeze({
 		UpgradeUI = true,
-		ShopUI = true,
-		SellUI = true,
-		CraftUI = true,
 	}),
 })

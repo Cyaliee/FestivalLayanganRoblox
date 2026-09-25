@@ -23,27 +23,30 @@ Connect lewat plugin Rojo. Rojo hanya mengelola:
 | `ServerScriptService/ServerPackages` | `ServerPackages` (wally) |
 | `StarterPlayer/StarterPlayerScripts/Client` | `src/client` |
 
-Instance lain (StarterGui, `ReplicatedStorage/UITemplates`, `Workspace/Plots`,
-`ServerStorage/Assets`) tidak disentuh Rojo — simpan place file seperti biasa.
+Instance lain (`Workspace/Plots`, `ServerStorage/Assets`) tidak disentuh Rojo —
+simpan place file seperti biasa. UI layar dibuat oleh kode (Fusion), lihat UI_GUIDE.md.
 
 ## Struktur
 
 ```
 src/
   shared/                 ReplicatedStorage/Shared
-    Config/               SEMUA angka balancing & nama instance
+    Config/               SEMUA angka balancing, nama instance, tema & gambar UI
+    Rules/                rumus bersama server/client (kapasitas tas, EXP)
+    Util/Format.luau      format angka
     Components.luau       komponen Matter
     Net.luau              akses bridge BridgeNet2
-    UI/UIRef.luau         cari elemen UI berdasarkan nama (warn, bukan error)
   server/                 ServerScriptService/Server
     init.server.luau      bootstrap + Matter loop
     Services/DataService  ProfileStore
     Systems/              system Matter (server)
-    Util/                 RateLimiter, Validation, Queries
+    Util/                 RateLimiter, Validation, Queries, WarnOnce
   client/                 StarterPlayerScripts/Client
     init.client.luau      bootstrap + Matter loop
-    Controllers/          binding UI (Fusion Hydrate)
+    Controllers/          UI, state dari server, input hotbar
+    State/                PlayerState, UIState, PlayerView (Fusion)
+    UI/                   komponen, layar, story UI Labs (Fusion)
     Systems/              system Matter (client)
 ```
 
-Lihat [UI_CONTRACT.md](UI_CONTRACT.md) untuk semua nama elemen UI yang dibutuhkan kode.
+Lihat [UI_GUIDE.md](UI_GUIDE.md) untuk mengisi gambar & mengubah tema UI.

@@ -1,5 +1,5 @@
 --!strict
--- Konfigurasi kavling. Nama instance harus cocok dengan yang ada di Studio (lihat UI_CONTRACT.md).
+-- Konfigurasi kavling. Nama instance harus cocok dengan yang ada di Studio (lihat UI_GUIDE.md).
 
 return table.freeze({
 	-- Workspace/<FolderName>/<Plot model>
