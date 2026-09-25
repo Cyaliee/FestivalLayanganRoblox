@@ -2,7 +2,6 @@
 -- Satu slot hotbar: ikon item, jumlah, tombol keyboard, highlight saat terpilih.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
 local Format = require(ReplicatedStorage.Shared.Util.Format)

@@ -12,14 +12,21 @@ local HotbarConfig = require(ReplicatedStorage.Shared.Config.Hotbar)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local Bag = require(ReplicatedStorage.Shared.Rules.Bag)
 local Progression = require(ReplicatedStorage.Shared.Rules.Progression)
+local TableRules = require(ReplicatedStorage.Shared.Rules.CraftingTable)
+local Recipes = require(ReplicatedStorage.Shared.Config.Recipes)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
 
-export type HotbarItem = { Id: string, Count: number }
+export type HotbarItem = { Id: string, Count: number, IsTool: boolean? }
 
 local PlayerView = {}
 
 -- Item di hotbar: count > 0, kategori yang diizinkan, urut Order, maks SlotCount
 function PlayerView.hotbarItems(inventory: { [string]: number }): { HotbarItem }
+	local tools: { HotbarItem } = {}
+	for _, toolId in HotbarConfig.Tools do
+		table.insert(tools, { Id = toolId, Count = 0, IsTool = true })
+	end
+
 	local list: { HotbarItem } = {}
 	for id, count in inventory do
 		local def = Items[id]
@@ -30,6 +37,9 @@ function PlayerView.hotbarItems(inventory: { [string]: number }): { HotbarItem }
 	table.sort(list, function(a, b)
 		return Items[a.Id].Order < Items[b.Id].Order
 	end)
+	for index = #tools, 1, -1 do
+		table.insert(list, 1, tools[index])
+	end
 	while #list > HotbarConfig.SlotCount do
 		table.remove(list)
 	end
@@ -122,6 +132,33 @@ function PlayerView.derive(scope: any, raw: any)
 		end),
 		TableLevel = computed(function(use)
 			return use(raw.TableLevel)
+		end),
+		TableIsMax = computed(function(use)
+			return TableRules.upgradeCost(use(raw.TableLevel)) == nil
+		end),
+		TableCostText = computed(function(use)
+			local cost = TableRules.upgradeCost(use(raw.TableLevel))
+			return if cost then Format.number(cost) else UIText.CostUnknown
+		end),
+		TableCanAfford = computed(function(use)
+			local cost = TableRules.upgradeCost(use(raw.TableLevel))
+			return cost ~= nil and use(raw.Coins) >= cost
+		end),
+		TableInfoText = computed(function(use)
+			local level = use(raw.TableLevel)
+			if TableRules.upgradeCost(level) == nil then
+				return string.format(UIText.TableSpeed, TableRules.speed(level))
+			end
+			local text = string.format(UIText.TableSpeedNext, TableRules.speed(level), TableRules.speed(level + 1))
+			local unlocks = TableRules.unlocksAt(level + 1)
+			if #unlocks > 0 then
+				local names = {}
+				for _, recipeId in unlocks do
+					table.insert(names, Items[Recipes[recipeId].Output].DisplayName)
+				end
+				text ..= "\n" .. string.format(UIText.TableUnlocks, table.concat(names, ", "))
+			end
+			return text
 		end),
 		HotbarItems = computed(function(use)
 			return PlayerView.hotbarItems(use(raw.Inventory))

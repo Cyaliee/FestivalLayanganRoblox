@@ -19,6 +19,8 @@ local Icons: { [string]: IconAsset } = {
 	Bag = { Image = "", Fallback = "🎒" },
 	Close = { Image = "", Fallback = "✖" },
 	Upgrade = { Image = "", Fallback = "⬆" },
+	Clock = { Image = "", Fallback = "⏱" },
+	Lock = { Image = "", Fallback = "🔒" },
 }
 
 -- Ikon per item. Key = Id di Config/Items.
@@ -29,6 +31,7 @@ local Items: { [string]: IconAsset } = {
 	Cloth = { Image = "", Fallback = "🧵" },
 	KiteBiasa = { Image = "", Fallback = "🪁" },
 	KiteNaga = { Image = "", Fallback = "🐉" },
+	Axe = { Image = "", Fallback = "🪓" }, -- slot tool hotbar
 }
 
 -- Key = nama palette di UITheme.Palettes (Green, Blue, Close, Orange, ...). Kosong = gaya Studded dari kode.

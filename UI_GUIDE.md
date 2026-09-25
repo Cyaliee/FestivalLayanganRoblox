@@ -45,7 +45,7 @@ Semua tulisan di UI (format level, EXP, tas, judul jendela, pemisah ribuan).
 2. Jalankan `rojo serve` dan Connect (tidak perlu Play).
 3. Buka UI Labs → storybook **Festival Layangan**. Story yang tersedia:
    `StudButton`, `ProgressBar`, `StatPill`, `HotbarSlot`, `Toast`, `Window`, `HUD`, `Hotbar`,
-   `UpgradeUI`, `BagUI`.
+   `UpgradeUI`, `BagUI`, `ShopUI`, `CraftUI`.
    Ubah nilai di panel Controls untuk mencoba data mock.
 
 ## 5. Yang masih dibuat di Studio (world UI)
@@ -62,8 +62,10 @@ src/client/
   State/UIState.luau       screen terbuka, slot terpilih, notifikasi, skala layar
   UI/Style.luau            palette, outline, sudut, stud, padding
   UI/Components/           Block (dasar Studded), Label, Icon, Panel, StudButton, ProgressBar,
-                           StatPill, HotbarSlot, Toast, Window
-  UI/Screens/              HUD, Hotbar, UpgradeUI, BagUI
+                           StatPill, HotbarSlot, Toast, Window, ListRow, ScrollList
+  Systems/craftTimers      billboard countdown di atas MejaRakit (Fusion, client)
+  Systems/treeHealth       bar HP pohon bambu (Fusion, client)
+  UI/Screens/              HUD, Hotbar, UpgradeUI, BagUI, ShopUI (per NPC), CraftUI
   UI/Stories/              story UI Labs
   Controllers/UIController memasang ScreenGui + bridge OpenUI/Notify
 ```

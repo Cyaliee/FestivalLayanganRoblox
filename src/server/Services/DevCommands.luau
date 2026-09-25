@@ -7,6 +7,9 @@
 	!coins <jumlah>           tambah koin
 	!clearbag                 kosongkan semua item
 	!baglevel <level>         set level tas langsung
+	!exp <jumlah>             tambah EXP (bisa naik level)
+	!tablelevel <level>       set level Meja Rakit
+	!finishcraft              selesaikan crafting sekarang
 	!devhelp                  tampilkan daftar command di Output
 ]]
 local Players = game:GetService("Players")
@@ -20,6 +23,8 @@ local Bag = require(ReplicatedStorage.Shared.Rules.Bag)
 local DataService = require(script.Parent.DataService)
 local InventoryService = require(script.Parent.InventoryService)
 local WalletService = require(script.Parent.WalletService)
+local ProgressionService = require(script.Parent.ProgressionService)
+local TableRules = require(ReplicatedStorage.Shared.Rules.CraftingTable)
 
 local DevCommands = {}
 
@@ -78,8 +83,36 @@ commands.baglevel = function(player, args)
 	end
 end
 
+commands.exp = function(player, args)
+	ProgressionService.addExp(player, tonumber(args[1]) or 100)
+	local data = DataService.getData(player)
+	if data then
+		reply(player, `Level {data.Level}, EXP {data.Exp}`)
+	end
+end
+
+commands.tablelevel = function(player, args)
+	local data = DataService.getData(player)
+	local level = tonumber(args[1])
+	if data and level then
+		data.TableLevel = TableRules.clampLevel(level)
+		reply(player, `Level meja = {data.TableLevel}`)
+	end
+end
+
+commands.finishcraft = function(player)
+	local data = DataService.getData(player)
+	if data and data.ActiveCraft then
+		data.ActiveCraft.EndsAt = workspace:GetServerTimeNow()
+		reply(player, "Crafting diselesaikan")
+	end
+end
+
 commands.devhelp = function(player)
-	reply(player, "!give <ItemId> <jumlah>, !coins <jumlah>, !clearbag, !baglevel <level>")
+	reply(
+		player,
+		"!give <Item> <n>, !coins <n>, !exp <n>, !clearbag, !baglevel <n>, !tablelevel <n>, !finishcraft"
+	)
 end
 
 local function onChatted(player: Player, message: string)

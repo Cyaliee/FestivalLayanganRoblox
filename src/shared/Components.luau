@@ -19,11 +19,33 @@ export type OwnerData = {
 export type CraftingTableData = {
 	Level: number,
 	model: Model,
+	prompt: ProximityPrompt?,
 }
 
 export type PlayerEntityData = {
 	player: Player,
 	userId: number,
+}
+
+export type BambooTreeData = {
+	model: Instance,
+	parent: Instance, -- folder asal (untuk dikembalikan saat respawn)
+	position: Vector3,
+}
+
+export type ShopNpcData = {
+	shopId: string,
+	model: Model,
+	prompt: ProximityPrompt,
+	position: Vector3,
+}
+
+export type FlyingData = {
+	kiteId: string,
+	endsAt: number,
+	nextTickAt: number,
+	model: Instance,
+	anchor: Attachment?,
 }
 
 return {
@@ -35,4 +57,12 @@ return {
 	CraftingTable = Matter.component("CraftingTable"),
 	-- Pemain yang datanya sudah selesai dimuat
 	PlayerEntity = Matter.component("PlayerEntity"),
+	-- Pohon bambu di Workspace/HutanBambu
+	BambooTree = Matter.component("BambooTree"),
+	TreeHealth = Matter.component("TreeHealth"), -- { hp }
+	Felled = Matter.component("Felled"), -- { respawnAt }
+	-- NPC pasar
+	ShopNpc = Matter.component("ShopNpc"),
+	-- Layangan yang sedang terbang (dipasang di entity PlayerEntity)
+	Flying = Matter.component("Flying"),
 }

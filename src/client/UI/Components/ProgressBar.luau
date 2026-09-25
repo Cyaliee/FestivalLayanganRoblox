@@ -16,6 +16,7 @@ export type Props = {
 	Position: any?,
 	AnchorPoint: any?,
 	LayoutOrder: number?,
+	Visible: any?,
 	Progress: any, -- 0..1 (boleh state)
 	Text: any?,
 	Palette: any?, -- warna isi, default role "Exp"
@@ -40,6 +41,7 @@ return function(scope: any, props: Props): Instance
 		Position = props.Position,
 		AnchorPoint = props.AnchorPoint,
 		LayoutOrder = props.LayoutOrder,
+		Visible = props.Visible,
 		Palette = props.TrackPalette or "ExpTrack",
 		CornerRadius = ROUND,
 		Studs = false,

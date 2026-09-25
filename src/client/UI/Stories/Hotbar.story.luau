@@ -11,6 +11,8 @@ local controls = {
 	Cloth = 0,
 	KiteBiasa = 2,
 	KiteNaga = 1,
+	Flying = true,
+	FlightProgress = 0.7,
 }
 
 return {
@@ -19,7 +21,7 @@ return {
 	story = function(props)
 		local scope = props.scope
 		local c = props.controls
-		local selected = scope:Value(nil)
+		local selected = scope:Value(nil) -- id item terpilih
 
 		local items = scope:Computed(function(use)
 			return PlayerView.hotbarItems({
@@ -36,8 +38,14 @@ return {
 			Items = items,
 			Selected = selected,
 			OnSelect = function(index)
-				selected:set(if Fusion.peek(selected) == index then nil else index)
+				local item = Fusion.peek(items)[index]
+				if item then
+					selected:set(if Fusion.peek(selected) == item.Id then nil else item.Id)
+				end
 			end,
+			FlightVisible = c.Flying,
+			FlightProgress = c.FlightProgress,
+			FlightText = "Layangan Biasa • 45s",
 		})
 		hotbar.Parent = props.target
 	end,

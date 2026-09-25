@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local UIConfig = require(ReplicatedStorage.Shared.Config.UI)
+local ShopsConfig = require(ReplicatedStorage.Shared.Config.Shops)
 
 local scope = Fusion.scoped(Fusion)
 local peek = Fusion.peek
@@ -11,13 +12,22 @@ local peek = Fusion.peek
 local UIState = {}
 
 UIState.Scale = scope:Value(1)
-UIState.SelectedSlot = scope:Value(nil :: number?)
+UIState.SelectedItem = scope:Value(nil :: string?) -- id item/tool terpilih di hotbar
+UIState.ServerTime = scope:Value(0) -- workspace:GetServerTimeNow(), diperbarui system clock
+
+-- Layangan yang sedang terbang (dari attribute Player, diperbarui system flightStatus)
+UIState.FlightKite = scope:Value(nil :: string?)
+UIState.FlightEndsAt = scope:Value(0)
+UIState.FlightDuration = scope:Value(1)
 UIState.NotificationText = scope:Value("")
 UIState.NotificationVisible = scope:Value(false)
 
 UIState.Open = {} :: { [string]: any }
 for name in UIConfig.OpenableScreens do
 	UIState.Open[name] = scope:Value(false)
+end
+for shopId in ShopsConfig.Shops do
+	UIState.Open[ShopsConfig.screenName(shopId)] = scope:Value(false)
 end
 
 -- Buka satu screen, tutup yang lain
@@ -37,13 +47,11 @@ function UIState.close(name: string)
 	end
 end
 
--- Pilih slot; pilih slot yang sama lagi = batal pilih
-function UIState.toggleSlot(index: number)
-	if peek(UIState.SelectedSlot) == index then
-		UIState.SelectedSlot:set(nil)
-	else
-		UIState.SelectedSlot:set(index)
-	end
+-- Pilih item hotbar; pilih yang sama lagi = batal pilih. return id terpilih sekarang.
+function UIState.toggleItem(id: string?): string?
+	local nextId = if peek(UIState.SelectedItem) == id then nil else id
+	UIState.SelectedItem:set(nextId)
+	return nextId
 end
 
 local notifyToken = 0

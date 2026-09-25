@@ -19,10 +19,12 @@ PlayerState.Exp = scope:Value(defaults.Exp)
 PlayerState.BagLevel = scope:Value(defaults.BagLevel)
 PlayerState.TableLevel = scope:Value(defaults.TableLevel)
 PlayerState.Inventory = scope:Value(defaults.Inventory)
+PlayerState.ActiveCraftRecipe = scope:Value("") -- "" = meja kosong
+PlayerState.ActiveCraftEndsAt = scope:Value(0) -- waktu server (GetServerTimeNow)
 
 PlayerState.view = PlayerView.derive(scope, PlayerState)
 
-local NUMBER_FIELDS = { "Coins", "Level", "Exp", "BagLevel", "TableLevel" }
+local NUMBER_FIELDS = { "Coins", "Level", "Exp", "BagLevel", "TableLevel", "ActiveCraftEndsAt" }
 
 local function isNumber(value: any): boolean
 	return type(value) == "number" and value == value
@@ -39,6 +41,10 @@ function PlayerState.apply(snapshot: any)
 		if isNumber(value) then
 			(PlayerState :: any)[field]:set(value)
 		end
+	end
+
+	if type(snapshot.ActiveCraftRecipe) == "string" then
+		PlayerState.ActiveCraftRecipe:set(snapshot.ActiveCraftRecipe)
 	end
 
 	if type(snapshot.Inventory) == "table" then

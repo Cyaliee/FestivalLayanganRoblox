@@ -2,7 +2,6 @@
 -- Jendela Upgrade Meja Rakit. Biaya & aksi upgrade disambungkan di Fase 4.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
 local Components = script.Parent.Parent.Components
@@ -17,6 +16,7 @@ export type Props = {
 	CurrentLevel: any, -- number (state)
 	MaxLevel: number,
 	CostText: any, -- string (state)
+	InfoText: any?, -- kecepatan & resep yang terbuka (state)
 	UpgradeText: any,
 	UpgradeDisabled: any,
 	OnUpgrade: () -> (),
@@ -35,7 +35,7 @@ return function(scope: any, props: Props): Instance
 		Open = props.Open,
 		OnClose = props.OnClose,
 		Scale = props.Scale,
-		Size = UDim2.fromOffset(440, 320),
+		Size = UDim2.fromOffset(460, 400),
 		Content = {
 			Style.padding(scope, 20),
 			scope:New("UIListLayout")({
@@ -71,9 +71,16 @@ return function(scope: any, props: Props): Instance
 					return string.format(UIText.Cost, use(props.CostText))
 				end),
 			}),
+			Label(scope, {
+				Name = "InfoText",
+				LayoutOrder = 4,
+				Size = UDim2.new(1, 0, 0, 44),
+				Text = props.InfoText or "",
+				MaxTextSize = 20,
+			}),
 			StudButton(scope, {
 				Name = "UpgradeButton",
-				LayoutOrder = 4,
+				LayoutOrder = 5,
 				Size = UDim2.fromOffset(220, 62),
 				Variant = "Primary",
 				Icon = UIAssets.Icons.Upgrade,

@@ -44,11 +44,21 @@ local function makeSnapshot(data: DataService.Data)
 		BagLevel = data.BagLevel,
 		TableLevel = data.TableLevel,
 		Inventory = inventory,
+		ActiveCraftRecipe = if data.ActiveCraft then data.ActiveCraft.RecipeId else "",
+		ActiveCraftEndsAt = if data.ActiveCraft then data.ActiveCraft.EndsAt else 0,
 	}
 end
 
 local function makeSignature(snapshot): string
-	local parts = { snapshot.Coins, snapshot.Level, snapshot.Exp, snapshot.BagLevel, snapshot.TableLevel }
+	local parts = {
+		snapshot.Coins,
+		snapshot.Level,
+		snapshot.Exp,
+		snapshot.BagLevel,
+		snapshot.TableLevel,
+		snapshot.ActiveCraftRecipe,
+		snapshot.ActiveCraftEndsAt,
+	}
 	for _, id in itemIds do
 		table.insert(parts, snapshot.Inventory[id])
 	end

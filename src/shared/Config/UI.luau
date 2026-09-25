@@ -7,5 +7,7 @@ return table.freeze({
 	OpenableScreens = table.freeze({
 		UpgradeUI = true,
 		BagUI = true,
+		CraftUI = true,
+		-- Shop_<Id> ditambahkan otomatis dari Config/Shops
 	}),
 })

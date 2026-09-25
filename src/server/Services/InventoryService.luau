@@ -23,7 +23,7 @@ local function isValidAmount(amount: number): boolean
 	return type(amount) == "number" and amount > 0 and amount == math.floor(amount)
 end
 
-local function notifyBagFull(player: Player)
+function InventoryService.notifyBagFull(player: Player)
 	local now = os.clock()
 	local last = lastFullNotify[player]
 	if last and now - last < Bags.FullNotifyCooldown then
@@ -73,7 +73,7 @@ function InventoryService.tryAdd(player: Player, itemId: string, amount: number,
 	end
 	if not InventoryService.canAdd(player, itemId, amount) then
 		if not (options and options.silent) then
-			notifyBagFull(player)
+			InventoryService.notifyBagFull(player)
 		end
 		return false
 	end

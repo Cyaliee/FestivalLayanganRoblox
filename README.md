@@ -49,4 +49,4 @@ src/
     Systems/              system Matter (client)
 ```
 
-Lihat [UI_GUIDE.md](UI_GUIDE.md) untuk mengisi gambar & mengubah tema UI.
+Lihat [SETUP_STUDIO.md](SETUP_STUDIO.md) untuk instance yang perlu disiapkan di Studio, dan [UI_GUIDE.md](UI_GUIDE.md) untuk mengisi gambar & mengubah tema UI.

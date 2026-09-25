@@ -1,6 +1,6 @@
 --!strict
 -- Spawn MejaRakit di kavling yang punya Owner, hapus saat Owner dilepas,
--- dan sinkronkan CraftingTable.Level dengan data TableLevel pemain.
+-- tambahkan prompt "Rakit Layangan", dan sinkronkan level & crafting aktif dari data pemain.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -31,6 +31,27 @@ local function clampLevel(level: number): number
 	return math.clamp(level, 1, TableConfig.MaxLevel)
 end
 
+local function addPrompt(model: Model): ProximityPrompt?
+	local parent = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
+	if parent == nil then
+		warn(`[CraftingTable] {model:GetFullName()} tidak punya BasePart untuk ProximityPrompt`)
+		return nil
+	end
+	local prompt = model:FindFirstChild(TableConfig.PromptName, true)
+	if prompt == nil or not prompt:IsA("ProximityPrompt") then
+		prompt = Instance.new("ProximityPrompt")
+		prompt.Name = TableConfig.PromptName
+		prompt.Parent = parent
+	end
+	local p = prompt :: ProximityPrompt
+	p.ActionText = TableConfig.PromptActionText
+	p.ObjectText = TableConfig.PromptObjectText
+	p.HoldDuration = TableConfig.PromptHoldDuration
+	p.MaxActivationDistance = TableConfig.InteractDistance
+	p.RequiresLineOfSight = false
+	return p
+end
+
 local function craftingTables(world)
 	-- Spawn meja untuk kavling yang baru diklaim
 	for id, plot, owner in world:query(Plot, Owner):without(CraftingTable) do
@@ -48,7 +69,7 @@ local function craftingTables(world)
 		model:SetAttribute(TableConfig.LevelAttribute, level)
 		model.Parent = plot.model
 
-		world:insert(id, CraftingTable({ Level = level, model = model }))
+		world:insert(id, CraftingTable({ Level = level, model = model, prompt = addPrompt(model) }))
 	end
 
 	-- Hapus meja dari kavling yang sudah dilepas
@@ -61,7 +82,7 @@ local function craftingTables(world)
 		world:remove(id, CraftingTable)
 	end
 
-	-- Sinkron level (upgrade di Fase 4 cukup mengubah data.TableLevel)
+	-- Sinkron level & crafting aktif dari data pemain (client membaca attribute untuk billboard)
 	for id, craftingTable, owner in world:query(CraftingTable, Owner) do
 		local data = DataService.getData(owner.player)
 		if data == nil then
@@ -71,6 +92,17 @@ local function craftingTables(world)
 		if level ~= craftingTable.Level then
 			craftingTable.model:SetAttribute(TableConfig.LevelAttribute, level)
 			world:insert(id, craftingTable:patch({ Level = level }))
+		end
+
+		local model = craftingTable.model
+		local craft = data.ActiveCraft
+		local recipeId = if craft then craft.RecipeId else nil
+		local endsAt = if craft then craft.EndsAt else nil
+		if model:GetAttribute(TableConfig.CraftRecipeAttribute) ~= recipeId then
+			model:SetAttribute(TableConfig.CraftRecipeAttribute, recipeId)
+		end
+		if model:GetAttribute(TableConfig.CraftEndsAtAttribute) ~= endsAt then
+			model:SetAttribute(TableConfig.CraftEndsAtAttribute, endsAt)
 		end
 	end
 end

@@ -21,6 +21,8 @@ export type Data = {
 	BagLevel: number,
 	TableLevel: number,
 	Inventory: { [string]: number },
+	-- Crafting yang sedang berjalan (nil kalau meja kosong). EndsAt = waktu server (GetServerTimeNow)
+	ActiveCraft: { RecipeId: string, EndsAt: number }?,
 }
 
 -- Template ProfileStore. Reconcile() akan mengisi key baru untuk pemain lama.

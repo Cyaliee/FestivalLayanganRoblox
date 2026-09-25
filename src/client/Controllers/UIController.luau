@@ -11,6 +11,8 @@ local HotbarConfig = require(ReplicatedStorage.Shared.Config.Hotbar)
 local TableConfig = require(ReplicatedStorage.Shared.Config.CraftingTable)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
+local ShopsConfig = require(ReplicatedStorage.Shared.Config.Shops)
+local Items = require(ReplicatedStorage.Shared.Config.Items)
 
 local State = script.Parent.Parent.State
 local PlayerState = require(State.PlayerState)
@@ -21,6 +23,9 @@ local HUD = require(Screens.HUD)
 local Hotbar = require(Screens.Hotbar)
 local UpgradeUI = require(Screens.UpgradeUI)
 local BagUI = require(Screens.BagUI)
+local ShopUI = require(Screens.ShopUI)
+local CraftUI = require(Screens.CraftUI)
+local HotbarController = require(script.Parent.HotbarController)
 
 local Children = Fusion.Children
 
@@ -105,12 +110,29 @@ function UIController.start()
 		1,
 		Hotbar(scope, {
 			Items = view.HotbarItems,
-			Selected = UIState.SelectedSlot,
-			OnSelect = UIState.toggleSlot,
+			Selected = UIState.SelectedItem,
+			OnSelect = HotbarController.activateSlot,
 			Scale = UIState.Scale,
+			FlightVisible = scope:Computed(function(use)
+				return use(UIState.FlightKite) ~= nil
+			end),
+			FlightProgress = scope:Computed(function(use)
+				local remaining = use(UIState.FlightEndsAt) - use(UIState.ServerTime)
+				return math.clamp(remaining / math.max(use(UIState.FlightDuration), 1), 0, 1)
+			end),
+			FlightText = scope:Computed(function(use)
+				local kiteId = use(UIState.FlightKite)
+				local def = kiteId and Items[kiteId]
+				if def == nil then
+					return ""
+				end
+				local remaining = math.max(0, math.ceil(use(UIState.FlightEndsAt) - use(UIState.ServerTime)))
+				return string.format(UIText.FlightText, def.DisplayName, string.format(UIText.Seconds, remaining))
+			end),
 		})
 	)
 
+	local tableUpgradeBridge = Net.bridge(NetworkConfig.Bridges.RequestTableUpgrade)
 	mount(
 		"UpgradeUI",
 		10,
@@ -121,10 +143,21 @@ function UIController.start()
 			end,
 			CurrentLevel = view.TableLevel,
 			MaxLevel = TableConfig.MaxLevel,
-			CostText = UIText.CostUnknown, -- Fase 4
-			UpgradeText = UIText.ComingSoon, -- Fase 4
-			UpgradeDisabled = true, -- Fase 4
-			OnUpgrade = function() end,
+			CostText = view.TableCostText,
+			InfoText = view.TableInfoText,
+			UpgradeText = scope:Computed(function(use)
+				if use(view.TableIsMax) then
+					return UIText.MaxLevel
+				end
+				return if use(view.TableCanAfford) then UIText.UpgradeButton else UIText.BagNotEnoughCoins
+			end),
+			UpgradeDisabled = scope:Computed(function(use)
+				return use(view.TableIsMax) or not use(view.TableCanAfford)
+			end),
+			-- Hanya intent; server cek kepemilikan, jarak, koin
+			OnUpgrade = function()
+				tableUpgradeBridge:Fire({})
+			end,
 			Scale = UIState.Scale,
 		})
 	)
@@ -147,6 +180,51 @@ function UIController.start()
 			-- Hanya intent; server yang validasi koin & level
 			OnUpgrade = function()
 				bagUpgradeBridge:Fire({})
+			end,
+			Scale = UIState.Scale,
+		})
+	)
+
+	-- Pasar: satu jendela per shop
+	local tradeBridge = Net.bridge(NetworkConfig.Bridges.RequestTrade)
+	for shopId, shop in ShopsConfig.Shops do
+		local screenName = ShopsConfig.screenName(shopId)
+		mount(
+			screenName,
+			10,
+			ShopUI(scope, {
+				Shop = shop,
+				Open = UIState.Open[screenName],
+				OnClose = function()
+					UIState.close(screenName)
+				end,
+				Inventory = PlayerState.Inventory,
+				Coins = PlayerState.Coins,
+				OnTrade = function(itemId, mode)
+					tradeBridge:Fire({ ShopId = shopId, ItemId = itemId, Mode = mode })
+				end,
+				Scale = UIState.Scale,
+			})
+		)
+	end
+
+	-- Crafting
+	local craftBridge = Net.bridge(NetworkConfig.Bridges.RequestCraft)
+	mount(
+		"CraftUI",
+		10,
+		CraftUI(scope, {
+			Open = UIState.Open.CraftUI,
+			OnClose = function()
+				UIState.close("CraftUI")
+			end,
+			Inventory = PlayerState.Inventory,
+			TableLevel = PlayerState.TableLevel,
+			ActiveRecipe = PlayerState.ActiveCraftRecipe,
+			ActiveEndsAt = PlayerState.ActiveCraftEndsAt,
+			ServerTime = UIState.ServerTime,
+			OnCraft = function(recipeId)
+				craftBridge:Fire({ RecipeId = recipeId })
 			end,
 			Scale = UIState.Scale,
 		})
