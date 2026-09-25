@@ -1,0 +1,17 @@
+[package]
+name = "cyaliee/festival-layangan"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+private = true
+
+[dependencies]
+Matter = "matter-ecs/matter@0.8.5"
+Fusion = "elttob/fusion@0.3.0"
+BridgeNet2 = "ffrostflame/bridgenet2@1.0.0"
+
+[server-dependencies]
+ProfileStore = "lm-loleris/profilestore@1.0.3"
+
+[dev-dependencies]
+UILabs = "pepeeltoro41/ui-labs@2.4.2"
