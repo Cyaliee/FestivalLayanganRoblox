@@ -1,18 +1,19 @@
 --!strict
 --[[
-	Mulai merakit. Client hanya kirim { RecipeId }.
+	Mulai merakit. Client hanya kirim { RecipeId, UseBooster }.
 	Validasi server: resep ada, punya meja sendiri & berada di dekatnya, meja tidak sibuk,
-	level meja cukup, bahan cukup (dikurangi saat mulai).
+	level meja cukup, bahan (+ booster) cukup — semua dikurangi saat mulai.
+	Aura Naga di kavling memotong waktu merakit.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Recipes = require(ReplicatedStorage.Shared.Config.Recipes)
-local Items = require(ReplicatedStorage.Shared.Config.Items)
 local TableConfig = require(ReplicatedStorage.Shared.Config.CraftingTable)
 local NetworkConfig = require(ReplicatedStorage.Shared.Config.Network)
 local Messages = require(ReplicatedStorage.Shared.Config.Messages)
 local TableRules = require(ReplicatedStorage.Shared.Rules.CraftingTable)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 
 local Server = script.Parent.Parent
 local DataService = require(Server.Services.DataService)
@@ -54,20 +55,33 @@ local function handle(world, player: Player, payload: any)
 		notify(player, Messages.TableBusy)
 		return
 	end
-	if data.TableLevel < recipe.RequiredTableLevel then
-		notify(player, string.format(Messages.TableLevelTooLow, recipe.RequiredTableLevel))
+	local requiredLevel = TableRules.requiredLevel(recipe.Id)
+	if data.TableLevel < requiredLevel then
+		notify(player, string.format(Messages.TableLevelTooLow, requiredLevel))
 		return
 	end
-	if not InventoryService.tryRemoveMany(player, recipe.Inputs) then
+
+	local useBooster = payload.UseBooster == true and recipe.Booster ~= nil
+	if useBooster and not TableRules.hasMaterials(data.Inventory, recipe.Id, true) then
+		if TableRules.hasMaterials(data.Inventory, recipe.Id, false) then
+			notify(player, Messages.NoBooster)
+		else
+			notify(player, Messages.MissingMaterials)
+		end
+		return
+	end
+	if not InventoryService.tryRemoveMany(player, TableRules.cost(recipe.Id, useBooster)) then
 		notify(player, Messages.MissingMaterials)
 		return
 	end
 
+	local dragonActive = data.PlacedDragon ~= nil
 	data.ActiveCraft = {
 		RecipeId = recipe.Id,
-		EndsAt = workspace:GetServerTimeNow() + TableRules.craftDuration(recipe.Id, data.TableLevel),
+		EndsAt = workspace:GetServerTimeNow() + TableRules.craftDuration(recipe.Id, data.TableLevel, dragonActive),
+		Boosted = useBooster,
 	}
-	notify(player, string.format(Messages.CraftStarted, Items[recipe.Output].DisplayName))
+	notify(player, string.format(Messages.CraftStarted, ItemKey.displayName(recipe.Output)))
 end
 
 local function crafting(world)

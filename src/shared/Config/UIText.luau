@@ -3,6 +3,10 @@
 
 return table.freeze({
 	LevelShort = "Lv %d",
+	LevelCard = "Lvl %d",
+	ExpShort = "%s / %s",
+	CoinFormat = "Rp. %s",
+	Nametag = "%s | Lv.%d",
 	ExpFormat = "%s / %s EXP",
 	ExpMax = "MAX",
 	BagFormat = "%d/%d",
@@ -40,6 +44,10 @@ return table.freeze({
 	-- Crafting
 	CraftTitle = "Rakit Layangan",
 	CraftButton = "Rakit",
+	BoosterOn = "✨ Bambu Emas: ON",
+	BoosterOff = "Bambu Emas: OFF",
+	FixedRarity = "Selalu %s",
+	LegendaryChance = "Peluang Legendary: %s%%",
 	CraftBusy = "Merakit: %s — %s",
 	CraftReady = "%s siap! (tas penuh?)",
 	CraftIdle = "Meja siap dipakai",
@@ -51,6 +59,8 @@ return table.freeze({
 
 	-- Layangan terbang
 	FlightText = "%s • %s",
+	-- Naga
+	DragonAura = "🐉 Aura Naga aktif",
 
 	ThousandSeparator = ".",
 	-- Singkatan angka besar, dari terbesar

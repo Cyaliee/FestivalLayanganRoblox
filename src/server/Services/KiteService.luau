@@ -1,11 +1,18 @@
 --!strict
--- Visual layangan terbang: model dari ServerStorage/Assets/Kites/<ItemId>, atau placeholder.
--- Tali (Beam) dari HumanoidRootPart pemain ke layangan.
+--[[
+	Visual layangan terbang. Model dicari di ServerStorage/Assets/Kites dengan urutan:
+	  "<ItemId>_<Rarity>" (mis. Kite_Legendary)  ->  "<ItemId>"  ->  placeholder
+	Placeholder memberi efek per rarity: Uncommon warna mencolok, Rare ekor (Trail),
+	Epic cahaya (PointLight), Legendary partikel + lebih besar.
+	Tali (Beam) dari HumanoidRootPart pemain ke layangan.
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
 local World = require(ReplicatedStorage.Shared.Config.World)
 local Kites = require(ReplicatedStorage.Shared.Config.Kites)
+local Rarity = require(ReplicatedStorage.Shared.Rules.Rarity)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 
 local KiteService = {}
 
@@ -29,21 +36,68 @@ local function prepare(part: BasePart)
 	part.CastShadow = false
 end
 
-local function makePlaceholder(kiteId: string): BasePart
+local function makePlaceholder(key: string): BasePart
+	local kiteId, rarityId = ItemKey.parse(key)
 	local stats = Kites.Stats[kiteId]
+	local tier = ItemKey.rarity(key)
+	local rarity = rarityId or "Common"
+
 	local part = Instance.new("Part")
 	part.Name = kiteId
-	part.Size = stats.Size
-	part.Color = stats.Color
-	part.Material = Enum.Material.SmoothPlastic
+	part.Size = stats.Size * (Kites.RaritySize[rarity] or 1)
+	part.Color = if tier then tier.Color else Color3.new(1, 1, 1)
+	part.Material = if Rarity.atLeast(rarity, "Epic") then Enum.Material.Neon else Enum.Material.SmoothPlastic
+
+	if Rarity.atLeast(rarity, "Rare") then
+		local a0 = Instance.new("Attachment")
+		a0.Position = Vector3.new(0, -part.Size.Y / 2, 0)
+		a0.Parent = part
+		local a1 = Instance.new("Attachment")
+		a1.Position = Vector3.new(0, -part.Size.Y / 2 - 0.5, 0)
+		a1.Parent = part
+		local trail = Instance.new("Trail")
+		trail.Attachment0 = a0
+		trail.Attachment1 = a1
+		trail.Lifetime = 1.2
+		trail.Color = ColorSequence.new(part.Color)
+		trail.Transparency = NumberSequence.new(0.2, 1)
+		trail.Parent = part
+	end
+	if Rarity.atLeast(rarity, "Epic") then
+		local light = Instance.new("PointLight")
+		light.Color = part.Color
+		light.Range = 14
+		light.Brightness = 2
+		light.Parent = part
+	end
+	if Rarity.atLeast(rarity, "Legendary") then
+		local particles = Instance.new("ParticleEmitter")
+		particles.Color = ColorSequence.new(part.Color)
+		particles.LightEmission = 1
+		particles.Rate = 25
+		particles.Lifetime = NumberRange.new(0.8, 1.4)
+		particles.Speed = NumberRange.new(1, 3)
+		particles.Size = NumberSequence.new(0.5, 0)
+		particles.Parent = part
+	end
 	return part
 end
 
--- Buat visual layangan untuk pemain. return (root visual, attachment di pemain)
-function KiteService.createVisual(player: Player, kiteId: string): (Instance, Attachment?)
+-- Template model dari ServerStorage/Assets/Kites (per rarity dulu, lalu umum)
+function KiteService.findTemplate(key: string): Instance?
+	local itemId, rarity = ItemKey.parse(key)
 	local assets = ServerStorage:FindFirstChild(World.AssetFolder)
 	local kites = assets and assets:FindFirstChild(World.KitesFolder)
-	local template = kites and kites:FindFirstChild(kiteId)
+	if kites == nil then
+		return nil
+	end
+	return (rarity and kites:FindFirstChild(`{itemId}_{rarity}`)) or kites:FindFirstChild(itemId)
+end
+
+-- Buat visual layangan untuk pemain. return (root visual, attachment di pemain)
+function KiteService.createVisual(player: Player, key: string): (Instance, Attachment?)
+	local kiteId = ItemKey.parse(key)
+	local template = KiteService.findTemplate(key)
 
 	local visual: Instance
 	local mainPart: BasePart
@@ -61,7 +115,7 @@ function KiteService.createVisual(player: Player, kiteId: string): (Instance, At
 		prepare(part)
 		visual, mainPart = part, part
 	else
-		local part = makePlaceholder(kiteId)
+		local part = makePlaceholder(key)
 		prepare(part)
 		visual, mainPart = part, part
 	end

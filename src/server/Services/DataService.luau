@@ -10,6 +10,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ProfileStore = require(ServerScriptService.ServerPackages.ProfileStore)
 local PlayerDataConfig = require(ReplicatedStorage.Shared.Config.PlayerData)
+local Recipes = require(ReplicatedStorage.Shared.Config.Recipes)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 
 export type Data = PlayerDataConfig.Data
 
@@ -39,6 +41,24 @@ local function onPlayerAdded(player: Player)
 	if profile.Data.BagTier ~= nil then
 		profile.Data.BagLevel = profile.Data.BagTier
 		profile.Data.BagTier = nil
+	end
+	-- Migrasi Fase 4.5: item lama -> item ber-rarity; key tidak dikenal dibuang
+	local inventory = profile.Data.Inventory
+	local renamed = { KiteBiasa = "Kite@Common", KiteNaga = "Kite@Rare" }
+	for oldKey, newKey in renamed do
+		if inventory[oldKey] then
+			inventory[newKey] = (inventory[newKey] or 0) + inventory[oldKey]
+			inventory[oldKey] = nil
+		end
+	end
+	for key, count in inventory do
+		if not ItemKey.isValid(key) or type(count) ~= "number" then
+			inventory[key] = nil
+		end
+	end
+	local craft = profile.Data.ActiveCraft
+	if craft and Recipes[craft.RecipeId] == nil then
+		profile.Data.ActiveCraft = nil
 	end
 
 	profile.OnSessionEnd:Connect(function()

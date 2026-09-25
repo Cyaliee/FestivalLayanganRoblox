@@ -13,20 +13,24 @@ export type Props = {
 	Visible: any, -- boolean (state)
 	Palette: any?,
 	Scale: any?,
+	Name: string?,
+	Size: UDim2?,
+	ShownY: number?, -- posisi Y saat tampil (default UITheme.Animation.ToastShownY)
+	MaxTextSize: number?,
 }
 
 return function(scope: any, props: Props): Instance
 	local y = scope:Spring(
 		scope:Computed(function(use)
-			return if use(props.Visible) then Anim.ToastShownY else Anim.ToastHiddenY
+			return if use(props.Visible) then props.ShownY or Anim.ToastShownY else Anim.ToastHiddenY
 		end),
 		Anim.ToastSpeed,
 		Anim.ToastDamping
 	)
 
 	return Block(scope, {
-		Name = "Notification",
-		Size = UDim2.fromOffset(Theme.Sizes.ToastWidth, Theme.Sizes.ToastHeight),
+		Name = props.Name or "Notification",
+		Size = props.Size or UDim2.fromOffset(Theme.Sizes.ToastWidth, Theme.Sizes.ToastHeight),
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = scope:Computed(function(use)
 			return UDim2.new(0.5, 0, 0, use(y))
@@ -39,6 +43,7 @@ return function(scope: any, props: Props): Instance
 			Label(scope, {
 				Name = "MessageText",
 				Text = props.Text,
+				MaxTextSize = props.MaxTextSize,
 				ZIndex = 3,
 			}),
 		},

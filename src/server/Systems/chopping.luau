@@ -1,5 +1,6 @@
 --!strict
--- Ayunan kapak: server cari pohon terdekat, kurangi HP, tumbangkan & beri bambu.
+-- Ayunan kapak: server cari pohon terdekat, kurangi HP, tumbangkan & beri bambu
+-- (+ peluang Bambu Emas; pohon emas memberi Bambu Emas pasti & diumumkan ke semua pemain).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
@@ -15,13 +16,19 @@ local DataService = require(Server.Services.DataService)
 local InventoryService = require(Server.Services.InventoryService)
 local ProgressionService = require(Server.Services.ProgressionService)
 local ToolService = require(Server.Services.ToolService)
+local GamepassService = require(Server.Services.GamepassService)
+local GoldenTrees = require(Server.Services.GoldenTrees)
 local IntentQueue = require(Server.Util.IntentQueue)
 local Validation = require(Server.Util.Validation)
 local notify = require(Server.Util.Notify)
+local announce = require(Server.Util.Announce)
 
 local BambooTree = Components.BambooTree
 local TreeHealth = Components.TreeHealth
 local Felled = Components.Felled
+local GoldenTree = Components.GoldenTree
+local Golden = Farming.Golden
+local rng = Random.new()
 local Bamboo = Farming.Bamboo
 local Axe = Farming.Axe
 
@@ -80,10 +87,7 @@ local function handle(world, player: Player)
 
 	local health = world:get(treeId, TreeHealth)
 	local newHp = health.hp - Axe.Damage
-	if newHp <= 0 and not InventoryService.canAdd(player, Bamboo.YieldItem, Bamboo.YieldAmount) then
-		InventoryService.notifyBagFull(player)
-		return
-	end
+	local isGolden = world:get(treeId, GoldenTree) ~= nil
 
 	if newHp > 0 then
 		world:insert(treeId, TreeHealth({ hp = newHp }))
@@ -91,9 +95,33 @@ local function handle(world, player: Player)
 		return
 	end
 
-	-- Tumbang
-	InventoryService.tryAdd(player, Bamboo.YieldItem, Bamboo.YieldAmount)
+	-- Hasil tumbang: bambu biasa + Bambu Emas (pohon emas, atau drop langka x Luck)
+	local loot: { [string]: number } = { [Bamboo.YieldItem] = Bamboo.YieldAmount }
+	local goldenAmount = 0
+	if isGolden then
+		goldenAmount = Golden.YieldAmount
+	elseif rng:NextNumber() < Golden.DropChance * GamepassService.luckMultiplier(player) then
+		goldenAmount = 1
+	end
+	if goldenAmount > 0 then
+		loot[Golden.ItemId] = goldenAmount
+	end
+	if not InventoryService.canAddMany(player, loot) then
+		InventoryService.notifyBagFull(player)
+		return -- pohon tidak tumbang; coba lagi setelah tas dikosongkan
+	end
+
+	for key, amount in loot do
+		InventoryService.tryAdd(player, key, amount)
+	end
 	ProgressionService.addExp(player, Bamboo.ExpPerFell)
+	if isGolden then
+		announce(string.format(Messages.GoldenTreeFelled, player.DisplayName), "Gold")
+		GoldenTrees.revert(world, treeId)
+	elseif goldenAmount > 0 then
+		notify(player, Messages.GoldenDrop)
+	end
+
 	world:insert(treeId, TreeHealth({ hp = 0 }), Felled({ respawnAt = os.clock() + Bamboo.RespawnTime }))
 	tree.model:SetAttribute(Bamboo.HpAttribute, 0)
 	tree.model.Parent = felledFolder()

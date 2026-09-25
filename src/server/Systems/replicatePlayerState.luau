@@ -6,7 +6,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Matter = require(ReplicatedStorage.Packages.Matter)
 local Components = require(ReplicatedStorage.Shared.Components)
 local Net = require(ReplicatedStorage.Shared.Net)
-local Items = require(ReplicatedStorage.Shared.Config.Items)
 local NetworkConfig = require(ReplicatedStorage.Shared.Config.Network)
 local DataService = require(script.Parent.Parent.Services.DataService)
 local RateLimiter = require(script.Parent.Parent.Util.RateLimiter)
@@ -16,12 +15,6 @@ local PlayerEntity = Components.PlayerEntity
 local stateBridge = Net.bridge(NetworkConfig.Bridges.PlayerState)
 local requestBridge = Net.bridge(NetworkConfig.Bridges.RequestState)
 local requestLimiter = RateLimiter.new(NetworkConfig.RateLimits.RequestState)
-
-local itemIds: { string } = {}
-for id in Items do
-	table.insert(itemIds, id)
-end
-table.sort(itemIds)
 
 local lastSignature: { [Player]: string } = {}
 
@@ -34,8 +27,10 @@ end)
 
 local function makeSnapshot(data: DataService.Data)
 	local inventory = {}
-	for _, id in itemIds do
-		inventory[id] = data.Inventory[id] or 0
+	for key, count in data.Inventory do
+		if count > 0 then
+			inventory[key] = count
+		end
 	end
 	return {
 		Coins = data.Coins,
@@ -46,6 +41,7 @@ local function makeSnapshot(data: DataService.Data)
 		Inventory = inventory,
 		ActiveCraftRecipe = if data.ActiveCraft then data.ActiveCraft.RecipeId else "",
 		ActiveCraftEndsAt = if data.ActiveCraft then data.ActiveCraft.EndsAt else 0,
+		PlacedDragon = data.PlacedDragon or "",
 	}
 end
 
@@ -58,9 +54,15 @@ local function makeSignature(snapshot): string
 		snapshot.TableLevel,
 		snapshot.ActiveCraftRecipe,
 		snapshot.ActiveCraftEndsAt,
+		snapshot.PlacedDragon,
 	}
-	for _, id in itemIds do
-		table.insert(parts, snapshot.Inventory[id])
+	local keys = {}
+	for key in snapshot.Inventory do
+		table.insert(keys, key)
+	end
+	table.sort(keys)
+	for _, key in keys do
+		table.insert(parts, key .. "=" .. snapshot.Inventory[key])
 	end
 	return table.concat(parts, ",")
 end

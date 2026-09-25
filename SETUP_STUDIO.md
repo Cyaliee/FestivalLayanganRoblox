@@ -22,9 +22,19 @@ Workspace/Pasar (Folder)
 Workspace/AreaFestival (Part, atau Folder berisi Part)
                                       ← Anchored, Transparency 1, CanCollide off. Area X/Z-nya = area terbang
 ServerStorage/Assets/Tools/Kapak (Tool, opsional)     ← kalau tidak ada dipakai kapak placeholder
-ServerStorage/Assets/Kites/KiteBiasa (Model/Part, opsional) ← kalau tidak ada dipakai layangan placeholder
-ServerStorage/Assets/Kites/KiteNaga  (Model/Part, opsional)
+ServerStorage/Assets/Kites/          (semua opsional; kalau tidak ada dipakai placeholder + efek)
+  Kite                                ← model layangan umum (dipakai semua rarity)
+  Kite_Uncommon / Kite_Rare / Kite_Epic / Kite_Legendary   ← model khusus per rarity (menang dari "Kite")
+  Naga  (atau Naga_Mythic)            ← model naga raksasa + ParticleEmitter/VFX buatanmu
+                                        Set PrimaryPart. Semua part otomatis Anchored & non-collide.
+Workspace/Plots/<Plot>/TiangNaga (Part, opsional) ← titik ikat tali naga; kalau tidak ada, diikat ke meja
 ```
+
+## Fase 4.5 — Endgame
+- **Gamepass**: isi `Id` di `src/shared/Config/Gamepasses.luau` (VIP, X2Exp, Luck2). Id `0` = efek mati.
+  Test di Studio tanpa beli: chat `!pass VIP`, `!pass X2Exp`, `!pass Luck2`.
+- **Nama bawaan Roblox** di atas kepala otomatis disembunyikan, diganti nametag `DisplayName | Lv.xxx`.
+- **Prompt naga** muncul di MejaRakit (tombol **F**) hanya untuk pemilik yang punya naga / naganya sedang terpasang.
 
 Prompt & tool dibuat otomatis oleh kode:
 - ProximityPrompt di NPC ("Jual Bambu", "Beli Bahan", "Jual Layangan")

@@ -4,7 +4,7 @@ local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local HotbarSlot = require(script.Parent.Parent.Components.HotbarSlot)
 
 local controls = {
-	ItemId = "KiteBiasa", -- kosongkan untuk slot kosong
+	ItemId = "Kite@Legendary", -- item key: Bamboo, Kite@Common..Kite@Legendary; kosongkan untuk slot kosong
 	Count = 3,
 	Selected = false,
 }

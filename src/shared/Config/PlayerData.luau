@@ -22,14 +22,19 @@ export type Data = {
 	TableLevel: number,
 	Inventory: { [string]: number },
 	-- Crafting yang sedang berjalan (nil kalau meja kosong). EndsAt = waktu server (GetServerTimeNow)
-	ActiveCraft: { RecipeId: string, EndsAt: number }?,
+	ActiveCraft: { RecipeId: string, EndsAt: number, Boosted: boolean? }?,
+	-- Item key Layangan Naga yang sedang dipasang di kavling (nil = tidak ada)
+	PlacedDragon: string?,
 }
 
 -- Template ProfileStore. Reconcile() akan mengisi key baru untuk pemain lama.
 function PlayerData.buildTemplate(): Data
+	-- Hanya item tanpa rarity yang punya slot awal; item ber-rarity ("Kite@Epic") ditambah saat didapat
 	local inventory = {}
-	for id in Items do
-		inventory[id] = 0
+	for id, def in Items do
+		if not def.HasRarity then
+			inventory[id] = 0
+		end
 	end
 	return {
 		Coins = PlayerData.StartingCoins,

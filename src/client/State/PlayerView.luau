@@ -7,7 +7,7 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Items = require(ReplicatedStorage.Shared.Config.Items)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 local HotbarConfig = require(ReplicatedStorage.Shared.Config.Hotbar)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local Bag = require(ReplicatedStorage.Shared.Rules.Bag)
@@ -16,6 +16,7 @@ local TableRules = require(ReplicatedStorage.Shared.Rules.CraftingTable)
 local Recipes = require(ReplicatedStorage.Shared.Config.Recipes)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
 
+-- Id = item key ("Bamboo", "Kite@Epic") atau id tool ("Axe")
 export type HotbarItem = { Id: string, Count: number, IsTool: boolean? }
 
 local PlayerView = {}
@@ -28,14 +29,14 @@ function PlayerView.hotbarItems(inventory: { [string]: number }): { HotbarItem }
 	end
 
 	local list: { HotbarItem } = {}
-	for id, count in inventory do
-		local def = Items[id]
+	for key, count in inventory do
+		local def = ItemKey.def(key)
 		if def and count > 0 and HotbarConfig.Categories[def.Category] then
-			table.insert(list, { Id = id, Count = count })
+			table.insert(list, { Id = key, Count = count })
 		end
 	end
 	table.sort(list, function(a, b)
-		return Items[a.Id].Order < Items[b.Id].Order
+		return ItemKey.sortValue(a.Id) < ItemKey.sortValue(b.Id)
 	end)
 	for index = #tools, 1, -1 do
 		table.insert(list, 1, tools[index])
@@ -88,6 +89,23 @@ function PlayerView.derive(scope: any, raw: any)
 		end),
 		CoinsText = computed(function(use)
 			return Format.number(use(raw.Coins))
+		end),
+		MoneyText = computed(function(use)
+			return string.format(UIText.CoinFormat, Format.number(use(raw.Coins)))
+		end),
+		LevelCardText = computed(function(use)
+			return string.format(UIText.LevelCard, use(raw.Level))
+		end),
+		ExpShortText = computed(function(use)
+			local level = use(raw.Level)
+			if Progression.isMaxLevel(level) then
+				return UIText.ExpMax
+			end
+			return string.format(
+				UIText.ExpShort,
+				Format.number(use(raw.Exp)),
+				Format.number(Progression.expToNext(level))
+			)
 		end),
 		BambooText = computed(function(use)
 			return Format.number(use(raw.Inventory).Bamboo or 0)
@@ -154,7 +172,7 @@ function PlayerView.derive(scope: any, raw: any)
 			if #unlocks > 0 then
 				local names = {}
 				for _, recipeId in unlocks do
-					table.insert(names, Items[Recipes[recipeId].Output].DisplayName)
+					table.insert(names, ItemKey.displayName(Recipes[recipeId].Output))
 				end
 				text ..= "\n" .. string.format(UIText.TableUnlocks, table.concat(names, ", "))
 			end

@@ -10,9 +10,10 @@ return table.freeze({
 		RequestBagUpgrade = "RequestBagUpgrade", -- client -> server: intent naik level tas (tanpa data)
 		RequestEquip = "RequestEquip", -- client -> server: { Id: string? } pilih slot hotbar (Axe / layangan / kosong)
 		RequestChop = "RequestChop", -- client -> server: ayun kapak (tanpa data; server cari pohon terdekat)
-		RequestTrade = "RequestTrade", -- client -> server: { ShopId, ItemId, Mode: "One"|"Bulk"|"All" }
-		RequestCraft = "RequestCraft", -- client -> server: { RecipeId }
+		RequestTrade = "RequestTrade", -- client -> server: { ShopId, ItemKey, Mode: "One"|"Bulk"|"All" }
+		RequestCraft = "RequestCraft", -- client -> server: { RecipeId, UseBooster: boolean }
 		RequestTableUpgrade = "RequestTableUpgrade", -- client -> server: intent upgrade meja (tanpa data)
+		Announce = "Announce", -- server -> semua client: { Text: string, Palette: string? } pengumuman global
 	}),
 
 	-- Rate limit per pemain: maksimal <Max> aksi per <Window> detik.
@@ -26,6 +27,7 @@ return table.freeze({
 		TableUpgrade = table.freeze({ Max = 3, Window = 2 }),
 		ShopPrompt = table.freeze({ Max = 3, Window = 2 }),
 		CraftPrompt = table.freeze({ Max = 3, Window = 2 }),
+		DragonPrompt = table.freeze({ Max = 2, Window = 2 }),
 	}),
 
 	-- Seberapa sering server cek perubahan data untuk dikirim ke client (detik)

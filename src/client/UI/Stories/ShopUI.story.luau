@@ -9,7 +9,8 @@ local controls = {
 	Coins = 50,
 	Bamboo = 12,
 	Glue = 2,
-	KiteBiasa = 3,
+	KiteCommon = 3,
+	KiteLegendary = 1,
 }
 
 return {
@@ -28,11 +29,16 @@ return {
 				open:set(false)
 			end,
 			Inventory = scope:Computed(function(use)
-				return { Bamboo = use(c.Bamboo), Glue = use(c.Glue), KiteBiasa = use(c.KiteBiasa) }
+				return {
+					Bamboo = use(c.Bamboo),
+					Glue = use(c.Glue),
+					["Kite@Common"] = use(c.KiteCommon),
+					["Kite@Legendary"] = use(c.KiteLegendary),
+				}
 			end),
 			Coins = c.Coins,
-			OnTrade = function(itemId, mode)
-				print("[Story] Trade", shop.Id, itemId, mode)
+			OnTrade = function(itemKey, mode)
+				print("[Story] Trade", shop.Id, itemKey, mode)
 			end,
 		})
 		window.Parent = props.target

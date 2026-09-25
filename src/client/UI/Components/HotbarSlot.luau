@@ -1,10 +1,12 @@
 --!strict
 -- Satu slot hotbar: ikon item, jumlah, tombol keyboard, highlight saat terpilih.
+-- Item ber-rarity: warna slot sesuai rarity (Uncommon hijau, Rare biru, Epic ungu, Legendary emas).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 local StudButton = require(script.Parent.StudButton)
 local Label = require(script.Parent.Label)
 local Icon = require(script.Parent.Icon)
@@ -18,17 +20,18 @@ export type Props = {
 }
 
 return function(scope: any, props: Props): Instance
-	local isEmpty = scope:Computed(function(use)
-		return use(props.Item) == nil
-	end)
-
 	return StudButton(scope, {
 		Name = "Slot" .. props.KeyText,
 		Size = UDim2.fromOffset(Theme.Sizes.SlotSize, Theme.Sizes.SlotSize),
 		LayoutOrder = props.LayoutOrder,
 		Variant = scope:Computed(function(use)
-			if use(isEmpty) then
+			local item = use(props.Item)
+			if item == nil then
 				return "SlotEmpty"
+			end
+			local tier = if item.IsTool then nil else ItemKey.rarity(item.Id)
+			if tier and tier.Id ~= "Common" then
+				return tier.Palette
 			end
 			return if use(props.Selected) then "SlotSelected" else "Slot"
 		end),
@@ -40,7 +43,7 @@ return function(scope: any, props: Props): Instance
 				Name = "Icon",
 				Asset = scope:Computed(function(use)
 					local item = use(props.Item)
-					return if item then UIAssets.Items[item.Id] else nil
+					return if item then UIAssets.Items[(ItemKey.parse(item.Id))] else nil
 				end),
 				Size = UDim2.fromScale(0.7, 0.7),
 				Position = UDim2.fromScale(0.5, 0.5),

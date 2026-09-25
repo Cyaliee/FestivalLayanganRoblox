@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Matter = require(ReplicatedStorage.Packages.Matter)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Kites = require(ReplicatedStorage.Shared.Config.Kites)
+local Gamepasses = require(ReplicatedStorage.Shared.Config.Gamepasses)
 local UIState = require(script.Parent.Parent.State.UIState)
 
 local peek = Fusion.peek
@@ -24,6 +25,7 @@ local function flightStatus(_world)
 	setIfChanged(UIState.FlightKite, player:GetAttribute(Kites.KiteAttribute))
 	setIfChanged(UIState.FlightEndsAt, player:GetAttribute(Kites.EndsAtAttribute) or 0)
 	setIfChanged(UIState.FlightDuration, player:GetAttribute(Kites.DurationAttribute) or 1)
+	setIfChanged(UIState.Luck, player:GetAttribute(Gamepasses.LuckAttribute) or 1)
 end
 
 return { system = flightStatus, priority = 0 }

@@ -20,6 +20,7 @@ export type CraftingTableData = {
 	Level: number,
 	model: Model,
 	prompt: ProximityPrompt?,
+	dragonPrompt: ProximityPrompt?,
 }
 
 export type PlayerEntityData = {
@@ -41,6 +42,7 @@ export type ShopNpcData = {
 }
 
 export type FlyingData = {
+	kiteKey: string, -- item key, mis. "Kite@Epic"
 	kiteId: string,
 	endsAt: number,
 	nextTickAt: number,
@@ -65,4 +67,8 @@ return {
 	ShopNpc = Matter.component("ShopNpc"),
 	-- Layangan yang sedang terbang (dipasang di entity PlayerEntity)
 	Flying = Matter.component("Flying"),
+	-- Pohon bambu emas (dipasang di entity BambooTree): { expiresAt }
+	GoldenTree = Matter.component("GoldenTree"),
+	-- Layangan Naga yang dipasang di kavling (entity Plot): { key, visual, nextTickAt, center }
+	Dragon = Matter.component("Dragon"),
 }

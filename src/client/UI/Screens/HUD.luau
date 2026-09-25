@@ -1,38 +1,37 @@
 --!strict
--- HUD: level + EXP, koin, bambu, layangan, tas, dan notifikasi.
+-- HUD: kapsul Bambu / Layangan / Tas (kiri atas), kartu profil (kanan bawah), notifikasi (atas).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
 local Components = script.Parent.Parent.Components
-local Panel = require(Components.Panel)
-local Label = require(Components.Label)
-local ProgressBar = require(Components.ProgressBar)
 local StatPill = require(Components.StatPill)
 local Toast = require(Components.Toast)
+local ProfileCard = require(Components.ProfileCard)
 
 local Children = Fusion.Children
 local Sizes = Theme.Sizes
 
 export type Props = {
-	-- dari PlayerView.derive
-	LevelText: any,
+	-- Kartu profil
+	DisplayName: any,
+	UserId: any,
+	MoneyText: any,
+	LevelCardText: any,
+	ExpShortText: any,
 	ExpProgress: any,
-	ExpText: any,
-	CoinsText: any,
+	-- Kapsul
 	BambooText: any,
 	KiteText: any,
 	BagText: any,
 	BagFull: any,
-	-- dari UIState
+	OnBagClick: (() -> ())?,
+	-- Notifikasi (UIState)
 	NotificationText: any,
 	NotificationVisible: any,
 	Scale: any?,
-	OnBagClick: (() -> ())?,
 }
-
-local BADGE_SIZE = 64
 
 return function(scope: any, props: Props): Instance
 	return scope:New("Frame")({
@@ -43,8 +42,8 @@ return function(scope: any, props: Props): Instance
 		[Children] = {
 			scope:New("Frame")({
 				Name = "StatusPanel",
-				Position = UDim2.fromOffset(Sizes.ScreenMargin, Sizes.ScreenMargin),
-				Size = UDim2.fromOffset(Sizes.PillWidth + 60, 360),
+				Position = UDim2.fromOffset(Sizes.ScreenMargin + 12, Sizes.ScreenMargin),
+				Size = UDim2.fromOffset(Sizes.PillWidth + 20, 200),
 				BackgroundTransparency = 1,
 
 				[Children] = {
@@ -53,61 +52,19 @@ return function(scope: any, props: Props): Instance
 						SortOrder = Enum.SortOrder.LayoutOrder,
 						Padding = UDim.new(0, 10 + Sizes.ShadowOffset),
 					}),
-
-					-- Level badge + EXP bar
-					scope:New("Frame")({
-						Name = "LevelRow",
-						LayoutOrder = 1,
-						Size = UDim2.fromOffset(Sizes.PillWidth + 60, BADGE_SIZE),
-						BackgroundTransparency = 1,
-						[Children] = {
-							ProgressBar(scope, {
-								Name = "ExpBar",
-								Progress = props.ExpProgress,
-								Text = props.ExpText,
-								Size = UDim2.fromOffset(Sizes.PillWidth + 10, 30),
-								Position = UDim2.new(0, BADGE_SIZE - 14, 0.5, 0),
-								AnchorPoint = Vector2.new(0, 0.5),
-							}),
-							Panel(scope, {
-								Name = "LevelBadge",
-								Size = UDim2.fromOffset(BADGE_SIZE, BADGE_SIZE),
-								CornerRadius = UDim.new(1, 0),
-								Palette = "Level",
-								Padding = 8,
-								ZIndex = 2,
-								Content = {
-									Label(scope, {
-										Name = "LevelText",
-										Text = props.LevelText,
-										Font = Theme.TitleFont,
-										ZIndex = 3,
-									}),
-								},
-							}),
-						},
-					}),
-
-					StatPill(scope, {
-						Name = "CoinText",
-						Icon = UIAssets.Icons.Coin,
-						Text = props.CoinsText,
-						Palette = "Coin",
-						LayoutOrder = 2,
-					}),
 					StatPill(scope, {
 						Name = "BambooText",
 						Icon = UIAssets.Icons.Bamboo,
 						Text = props.BambooText,
 						Palette = "Bamboo",
-						LayoutOrder = 3,
+						LayoutOrder = 1,
 					}),
 					StatPill(scope, {
 						Name = "KiteText",
 						Icon = UIAssets.Icons.Kite,
 						Text = props.KiteText,
 						Palette = "Kite",
-						LayoutOrder = 4,
+						LayoutOrder = 2,
 					}),
 					StatPill(scope, {
 						Name = "BagText",
@@ -117,9 +74,21 @@ return function(scope: any, props: Props): Instance
 							return if use(props.BagFull) then "BagFull" else "Bag"
 						end),
 						OnActivated = props.OnBagClick,
-						LayoutOrder = 5,
+						LayoutOrder = 3,
 					}),
 				},
+			}),
+
+			ProfileCard(scope, {
+				DisplayName = props.DisplayName,
+				UserId = props.UserId,
+				MoneyText = props.MoneyText,
+				LevelText = props.LevelCardText,
+				ExpText = props.ExpShortText,
+				ExpProgress = props.ExpProgress,
+				AnchorPoint = Vector2.new(1, 1),
+				Position = UDim2.new(1, -Sizes.ScreenMargin, 1, -Sizes.ScreenMargin),
+				Scale = props.Scale,
 			}),
 
 			scope:New("Frame")({

@@ -14,6 +14,7 @@ for _, name in NetworkConfig.Bridges do
 end
 
 DataService.start()
+require(script.Services.GamepassService).start()
 require(script.Services.DevCommands).start() -- hanya aktif di Studio
 
 local world = Matter.World.new()

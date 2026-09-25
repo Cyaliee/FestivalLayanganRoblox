@@ -8,9 +8,11 @@ local controls = {
 	Bamboo = 12,
 	Glue = 4,
 	Paper = 4,
-	Cloth = 0,
-	KiteBiasa = 2,
-	KiteNaga = 1,
+	GoldenBamboo = 1,
+	KiteCommon = 2,
+	KiteRare = 1,
+	KiteEpic = 1,
+	KiteLegendary = 1,
 	Flying = true,
 	FlightProgress = 0.7,
 }
@@ -28,9 +30,11 @@ return {
 				Bamboo = use(c.Bamboo),
 				Glue = use(c.Glue),
 				Paper = use(c.Paper),
-				Cloth = use(c.Cloth),
-				KiteBiasa = use(c.KiteBiasa),
-				KiteNaga = use(c.KiteNaga),
+				GoldenBamboo = use(c.GoldenBamboo),
+				["Kite@Common"] = use(c.KiteCommon),
+				["Kite@Rare"] = use(c.KiteRare),
+				["Kite@Epic"] = use(c.KiteEpic),
+				["Kite@Legendary"] = use(c.KiteLegendary),
 			})
 		end)
 
@@ -45,7 +49,7 @@ return {
 			end,
 			FlightVisible = c.Flying,
 			FlightProgress = c.FlightProgress,
-			FlightText = "Layangan Biasa • 45s",
+			FlightText = "Layangan (Epic) • 45s",
 		})
 		hotbar.Parent = props.target
 	end,

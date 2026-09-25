@@ -1,8 +1,8 @@
 --!strict
 --[[
-	Layangan terbang di Area Festival.
-	Menerbangkan menghabiskan 1 layangan (sink). Selama Duration, tiap TickInterval detik
-	pemain yang berada di Area Festival dapat EXP & Koin.
+	Layangan terbang di Area Festival (dari hotbar).
+	Menerbangkan menghabiskan 1 layangan (sink). Tiap TickInterval detik pemain yang berada di
+	Area Festival dapat koin & EXP = nilai dasar x Multiplier rarity (Config/Rarity).
 ]]
 
 export type KiteStats = {
@@ -10,37 +10,29 @@ export type KiteStats = {
 	TickInterval: number,
 	ExpPerTick: number,
 	CoinsPerTick: number,
-	Color: Color3, -- warna layangan placeholder (kalau model tidak ada)
-	Size: Vector3,
+	Size: Vector3, -- ukuran placeholder
 }
 
 local Stats: { [string]: KiteStats } = {
-	KiteBiasa = {
+	Kite = {
 		Duration = 60,
-		TickInterval = 2,
-		ExpPerTick = 3,
-		CoinsPerTick = 2,
-		Color = Color3.fromRGB(255, 80, 80),
+		TickInterval = 10,
+		ExpPerTick = 2,
+		CoinsPerTick = 5,
 		Size = Vector3.new(4, 4, 0.2),
-	},
-	KiteNaga = {
-		Duration = 120,
-		TickInterval = 2,
-		ExpPerTick = 10,
-		CoinsPerTick = 8,
-		Color = Color3.fromRGB(255, 180, 40),
-		Size = Vector3.new(7, 7, 0.2),
 	},
 }
 
 return table.freeze({
 	Stats = Stats,
+	-- Skala ukuran visual per rarity
+	RaritySize = table.freeze({ Legendary = 1.3 }),
 	Height = 28, -- tinggi layangan di atas pemain (studs)
 	Distance = 14, -- jarak ke belakang pemain
-	SwayAmount = 3, -- goyangan kiri-kanan
+	SwayAmount = 3,
 	SwaySpeed = 1.2,
 	-- Attribute di Player (dibaca HUD client)
-	KiteAttribute = "FlyingKite",
+	KiteAttribute = "FlyingKite", -- item key, mis. "Kite@Epic"
 	EndsAtAttribute = "FlightEndsAt",
 	DurationAttribute = "FlightDuration",
 })

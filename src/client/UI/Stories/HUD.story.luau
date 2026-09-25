@@ -5,9 +5,11 @@ local PlayerView = require(script.Parent.Parent.Parent.State.PlayerView)
 local HUD = require(script.Parent.Parent.Screens.HUD)
 
 local controls = {
-	Level = 5,
-	Exp = 120,
-	Coins = 1250,
+	DisplayName = "Melvin",
+	UserId = 1,
+	Level = 11,
+	Exp = 193,
+	Coins = 907345,
 	Bamboo = 12,
 	Kites = 3,
 	BagLevel = 1,
@@ -29,7 +31,7 @@ return {
 			BagLevel = c.BagLevel,
 			TableLevel = 1,
 			Inventory = scope:Computed(function(use)
-				return { Bamboo = use(c.Bamboo), KiteBiasa = use(c.Kites) }
+				return { Bamboo = use(c.Bamboo), ["Kite@Common"] = use(c.Kites) }
 			end),
 		})
 
@@ -37,10 +39,12 @@ return {
 			OnBagClick = function()
 				print("[Story] Kapsul tas diklik")
 			end,
-			LevelText = view.LevelText,
+			DisplayName = c.DisplayName,
+			UserId = c.UserId,
+			MoneyText = view.MoneyText,
+			LevelCardText = view.LevelCardText,
+			ExpShortText = view.ExpShortText,
 			ExpProgress = view.ExpProgress,
-			ExpText = view.ExpText,
-			CoinsText = view.CoinsText,
 			BambooText = view.BambooText,
 			KiteText = view.KiteText,
 			BagText = view.BagText,

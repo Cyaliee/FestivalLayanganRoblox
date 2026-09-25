@@ -5,7 +5,8 @@
 	NpcName = nama Model NPC di Workspace/Pasar.
 ]]
 
-export type ShopItem = { ItemId: string, Price: number, Order: number }
+-- ItemKey = key inventory ("Bamboo", "Kite@Epic"). Price = harga final.
+export type ShopItem = { ItemKey: string, Price: number, Order: number }
 export type Shop = {
 	Id: string,
 	Type: "Buy" | "Sell",
@@ -25,7 +26,7 @@ local Shops: { [string]: Shop } = {
 		PromptText = "Jual Bambu",
 		Palette = "Green",
 		Items = {
-			{ ItemId = "Bamboo", Price = 5, Order = 1 },
+			{ ItemKey = "Bamboo", Price = 5, Order = 1 },
 		},
 	},
 	Toko = {
@@ -36,9 +37,10 @@ local Shops: { [string]: Shop } = {
 		PromptText = "Beli Bahan",
 		Palette = "Blue",
 		Items = {
-			{ ItemId = "Glue", Price = 8, Order = 1 },
-			{ ItemId = "Paper", Price = 6, Order = 2 },
-			{ ItemId = "Cloth", Price = 20, Order = 3 },
+			{ ItemKey = "Glue", Price = 8, Order = 1 },
+			{ ItemKey = "Paper", Price = 6, Order = 2 },
+			{ ItemKey = "SuperGlue", Price = 150, Order = 3 },
+			{ ItemKey = "ParachuteCloth", Price = 120, Order = 4 },
 		},
 	},
 	Tengkulak = {
@@ -48,12 +50,25 @@ local Shops: { [string]: Shop } = {
 		NpcName = "Tengkulak",
 		PromptText = "Jual Layangan",
 		Palette = "Red",
-		Items = {
-			{ ItemId = "KiteBiasa", Price = 40, Order = 1 },
-			{ ItemId = "KiteNaga", Price = 250, Order = 2 },
-		},
+		Items = {}, -- diisi otomatis di bawah: Layangan per rarity
 	},
 }
+
+-- Tengkulak: harga Layangan = KiteBasePrice x Multiplier rarity (Common..Legendary)
+local KiteBasePrice = 40
+do
+	local Rarity = require(script.Parent.Rarity)
+	for index, rarityId in Rarity.Order do
+		local tier = Rarity.Tiers[rarityId]
+		if tier.Weight > 0 then
+			table.insert(Shops.Tengkulak.Items, {
+				ItemKey = "Kite@" .. rarityId,
+				Price = math.floor(KiteBasePrice * tier.Multiplier),
+				Order = index,
+			})
+		end
+	end
+end
 
 local ShopsConfig = {
 	Shops = Shops,
@@ -69,9 +84,9 @@ function ShopsConfig.screenName(shopId: string): string
 	return "Shop_" .. shopId
 end
 
-function ShopsConfig.findItem(shop: Shop, itemId: string): ShopItem?
+function ShopsConfig.findItem(shop: Shop, itemKey: string): ShopItem?
 	for _, entry in shop.Items do
-		if entry.ItemId == itemId then
+		if entry.ItemKey == itemKey then
 			return entry
 		end
 	end

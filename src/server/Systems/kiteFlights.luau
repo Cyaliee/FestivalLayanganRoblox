@@ -1,12 +1,13 @@
 --!strict
--- Layangan terbang: gerakkan visual, beri EXP & koin per tick (hanya di Area Festival),
--- dan turunkan layangan saat durasinya habis.
+-- Layangan terbang: gerakkan visual, beri EXP & koin per tick x Multiplier rarity
+-- (hanya di Area Festival), dan turunkan layangan saat durasinya habis.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Components = require(ReplicatedStorage.Shared.Components)
 local Kites = require(ReplicatedStorage.Shared.Config.Kites)
 local Messages = require(ReplicatedStorage.Shared.Config.Messages)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 
 local Server = script.Parent.Parent
 local ProgressionService = require(Server.Services.ProgressionService)
@@ -48,8 +49,9 @@ local function kiteFlights(world)
 		if now >= flying.nextTickAt then
 			local stats = Kites.Stats[flying.kiteId]
 			if FestivalArea.contains(root.Position) then
-				ProgressionService.addExp(player, stats.ExpPerTick)
-				WalletService.add(player, stats.CoinsPerTick)
+				local multiplier = ItemKey.multiplier(flying.kiteKey)
+				ProgressionService.addExp(player, stats.ExpPerTick * multiplier)
+				WalletService.add(player, stats.CoinsPerTick * multiplier)
 			end
 			world:insert(id, flying:patch({ nextTickAt = flying.nextTickAt + stats.TickInterval }))
 		end

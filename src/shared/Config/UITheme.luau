@@ -68,6 +68,18 @@ return table.freeze({
 		UpgradeWindow = "Orange",
 	}),
 
+	-- Kartu profil (kanan bawah)
+	Profile = table.freeze({
+		Accent = rgb(26, 196, 190),
+		Panel = rgb(20, 24, 30),
+		PanelTransparency = 0.35,
+		Money = rgb(255, 206, 60),
+		TrackColor = rgb(40, 48, 56),
+		Width = 290,
+		Height = 96,
+		AvatarSize = 84,
+	}),
+
 	-- Tekstur stud dari kit StuddedUI
 	Studs = table.freeze({
 		Image = "rbxassetid://118347284107187",
@@ -86,8 +98,8 @@ return table.freeze({
 
 		PillWidth = 200,
 		PillHeight = 42,
-		SlotSize = 68,
-		SlotGap = 10,
+		SlotSize = 64,
+		SlotGap = 8,
 		ScreenMargin = 16,
 		ToastWidth = 440,
 		ToastHeight = 56,

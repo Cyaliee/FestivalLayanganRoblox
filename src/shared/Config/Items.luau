@@ -1,24 +1,70 @@
 --!strict
--- Daftar semua item fisik. Id = key di Inventory pemain.
--- Tambah item baru cukup di sini; Inventory default dibangun otomatis dari tabel ini.
+--[[
+	Daftar semua item. Id = nama dasar item.
+	Item dengan HasRarity = true disimpan per rarity di Inventory dengan key "<Id>@<Rarity>"
+	(lihat Rules/ItemKey). Item lain disimpan dengan key = Id.
+]]
 
 export type ItemDef = {
 	Id: string,
 	DisplayName: string,
-	Category: "Material" | "Kite",
-	-- true = menghitung ke kapasitas tas (dipakai di Fase 3)
-	CountsToBag: boolean,
-	-- Urutan tampil (hotbar/list)
-	Order: number,
+	Category: "Material" | "Kite" | "Dragon",
+	CountsToBag: boolean, -- menghitung ke kapasitas tas
+	HasRarity: boolean,
+	Order: number, -- urutan tampil (hotbar/list)
 }
 
 local Items: { [string]: ItemDef } = {
-	Bamboo = { Id = "Bamboo", DisplayName = "Bambu", Category = "Material", CountsToBag = true, Order = 1 },
-	Glue = { Id = "Glue", DisplayName = "Lem", Category = "Material", CountsToBag = true, Order = 2 },
-	Paper = { Id = "Paper", DisplayName = "Kertas", Category = "Material", CountsToBag = true, Order = 3 },
-	Cloth = { Id = "Cloth", DisplayName = "Kain", Category = "Material", CountsToBag = true, Order = 4 },
-	KiteBiasa = { Id = "KiteBiasa", DisplayName = "Layangan Biasa", Category = "Kite", CountsToBag = true, Order = 10 },
-	KiteNaga = { Id = "KiteNaga", DisplayName = "Layangan Naga", Category = "Kite", CountsToBag = true, Order = 11 },
+	Bamboo = {
+		Id = "Bamboo",
+		DisplayName = "Bambu",
+		Category = "Material",
+		CountsToBag = true,
+		HasRarity = false,
+		Order = 1,
+	},
+	GoldenBamboo = {
+		Id = "GoldenBamboo",
+		DisplayName = "Bambu Emas",
+		Category = "Material",
+		CountsToBag = true,
+		HasRarity = false,
+		Order = 2,
+	},
+	Glue = { Id = "Glue", DisplayName = "Lem", Category = "Material", CountsToBag = true, HasRarity = false, Order = 3 },
+	Paper = {
+		Id = "Paper",
+		DisplayName = "Kertas",
+		Category = "Material",
+		CountsToBag = true,
+		HasRarity = false,
+		Order = 4,
+	},
+	SuperGlue = {
+		Id = "SuperGlue",
+		DisplayName = "Lem Super",
+		Category = "Material",
+		CountsToBag = true,
+		HasRarity = false,
+		Order = 5,
+	},
+	ParachuteCloth = {
+		Id = "ParachuteCloth",
+		DisplayName = "Kain Parasut",
+		Category = "Material",
+		CountsToBag = true,
+		HasRarity = false,
+		Order = 6,
+	},
+	Kite = { Id = "Kite", DisplayName = "Layangan", Category = "Kite", CountsToBag = true, HasRarity = true, Order = 10 },
+	Naga = {
+		Id = "Naga",
+		DisplayName = "Layangan Naga",
+		Category = "Dragon",
+		CountsToBag = true,
+		HasRarity = true,
+		Order = 20,
+	},
 }
 
 return table.freeze(Items)

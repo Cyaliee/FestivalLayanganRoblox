@@ -12,7 +12,7 @@ local TableConfig = require(ReplicatedStorage.Shared.Config.CraftingTable)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local ShopsConfig = require(ReplicatedStorage.Shared.Config.Shops)
-local Items = require(ReplicatedStorage.Shared.Config.Items)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 
 local State = script.Parent.Parent.State
 local PlayerState = require(State.PlayerState)
@@ -25,6 +25,7 @@ local UpgradeUI = require(Screens.UpgradeUI)
 local BagUI = require(Screens.BagUI)
 local ShopUI = require(Screens.ShopUI)
 local CraftUI = require(Screens.CraftUI)
+local Announcement = require(Screens.Announcement)
 local HotbarController = require(script.Parent.HotbarController)
 
 local Children = Fusion.Children
@@ -88,10 +89,12 @@ function UIController.start()
 		"HUD",
 		1,
 		HUD(scope, {
-			LevelText = view.LevelText,
+			DisplayName = Players.LocalPlayer.DisplayName,
+			UserId = Players.LocalPlayer.UserId,
+			MoneyText = view.MoneyText,
+			LevelCardText = view.LevelCardText,
+			ExpShortText = view.ExpShortText,
 			ExpProgress = view.ExpProgress,
-			ExpText = view.ExpText,
-			CoinsText = view.CoinsText,
 			BambooText = view.BambooText,
 			KiteText = view.KiteText,
 			BagText = view.BagText,
@@ -121,13 +124,12 @@ function UIController.start()
 				return math.clamp(remaining / math.max(use(UIState.FlightDuration), 1), 0, 1)
 			end),
 			FlightText = scope:Computed(function(use)
-				local kiteId = use(UIState.FlightKite)
-				local def = kiteId and Items[kiteId]
-				if def == nil then
+				local kiteKey = use(UIState.FlightKite)
+				if kiteKey == nil or not ItemKey.isValid(kiteKey) then
 					return ""
 				end
 				local remaining = math.max(0, math.ceil(use(UIState.FlightEndsAt) - use(UIState.ServerTime)))
-				return string.format(UIText.FlightText, def.DisplayName, string.format(UIText.Seconds, remaining))
+				return string.format(UIText.FlightText, ItemKey.displayName(kiteKey), string.format(UIText.Seconds, remaining))
 			end),
 		})
 	)
@@ -200,8 +202,8 @@ function UIController.start()
 				end,
 				Inventory = PlayerState.Inventory,
 				Coins = PlayerState.Coins,
-				OnTrade = function(itemId, mode)
-					tradeBridge:Fire({ ShopId = shopId, ItemId = itemId, Mode = mode })
+				OnTrade = function(itemKey, mode)
+					tradeBridge:Fire({ ShopId = shopId, ItemKey = itemKey, Mode = mode })
 				end,
 				Scale = UIState.Scale,
 			})
@@ -223,12 +225,33 @@ function UIController.start()
 			ActiveRecipe = PlayerState.ActiveCraftRecipe,
 			ActiveEndsAt = PlayerState.ActiveCraftEndsAt,
 			ServerTime = UIState.ServerTime,
-			OnCraft = function(recipeId)
-				craftBridge:Fire({ RecipeId = recipeId })
+			OnCraft = function(recipeId, useBooster)
+				craftBridge:Fire({ RecipeId = recipeId, UseBooster = useBooster })
 			end,
+			Luck = UIState.Luck,
+			DragonActive = scope:Computed(function(use)
+				return use(PlayerState.PlacedDragon) ~= ""
+			end),
 			Scale = UIState.Scale,
 		})
 	)
+
+	-- Pengumuman global
+	mount(
+		"Announcement",
+		20,
+		Announcement(scope, {
+			Text = UIState.AnnouncementText,
+			Palette = UIState.AnnouncementPalette,
+			Visible = UIState.AnnouncementVisible,
+			Scale = UIState.Scale,
+		})
+	)
+	Net.bridge(NetworkConfig.Bridges.Announce):Connect(function(content)
+		if type(content) == "table" and type(content.Text) == "string" then
+			UIState.announce(content.Text, if type(content.Palette) == "string" then content.Palette else nil)
+		end
+	end)
 
 	Net.bridge(NetworkConfig.Bridges.OpenUI):Connect(function(content)
 		if type(content) == "table" and type(content.Name) == "string" then

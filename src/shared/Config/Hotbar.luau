@@ -5,7 +5,7 @@ return table.freeze({
 	SlotCount = 9,
 	-- Slot tetap di depan (tool), id sesuai UIAssets.Items
 	Tools = table.freeze({ "Axe" }),
-	-- Kategori item (Config/Items) yang tampil di hotbar
+	-- Kategori item (Config/Items) yang tampil di hotbar (Naga TIDAK: dipasang di kavling)
 	Categories = table.freeze({
 		Material = true,
 		Kite = true,

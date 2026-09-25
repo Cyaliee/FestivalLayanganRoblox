@@ -1,19 +1,20 @@
 --!strict
 --[[
 	InventoryService: SATU-SATUNYA jalan untuk menambah/mengurangi item di server.
-	Semua item dengan CountsToBag menghitung ke kapasitas tas (Rules/Bag).
+	Semua fungsi memakai item key (Rules/ItemKey): "Bamboo", "Kite@Legendary", ...
+	Item dengan CountsToBag menghitung ke kapasitas tas (Rules/Bag).
 	Loot yang tidak muat ditolak dan pemain dapat notifikasi "Tas Penuh!".
 ]]
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local Items = require(ReplicatedStorage.Shared.Config.Items)
 local Bags = require(ReplicatedStorage.Shared.Config.Bags)
 local Messages = require(ReplicatedStorage.Shared.Config.Messages)
-local NetworkConfig = require(ReplicatedStorage.Shared.Config.Network)
 local Bag = require(ReplicatedStorage.Shared.Rules.Bag)
-local Net = require(ReplicatedStorage.Shared.Net)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 local DataService = require(ServerScriptService.Server.Services.DataService)
+local notify = require(ServerScriptService.Server.Util.Notify)
 
 local InventoryService = {}
 
@@ -30,12 +31,12 @@ function InventoryService.notifyBagFull(player: Player)
 		return
 	end
 	lastFullNotify[player] = now
-	Net.bridge(NetworkConfig.Bridges.Notify):Fire(player, { Text = Messages.BagFull })
+	notify(player, Messages.BagFull)
 end
 
-function InventoryService.getCount(player: Player, itemId: string): number
+function InventoryService.getCount(player: Player, key: string): number
 	local data = DataService.getData(player)
-	return if data then data.Inventory[itemId] or 0 else 0
+	return if data then data.Inventory[key] or 0 else 0
 end
 
 function InventoryService.getUsed(player: Player): number
@@ -52,63 +53,80 @@ function InventoryService.getFreeSpace(player: Player): number
 	return math.max(0, InventoryService.getCapacity(player) - InventoryService.getUsed(player))
 end
 
--- Cek apakah `amount` item muat di tas (tanpa mengubah apa pun)
-function InventoryService.canAdd(player: Player, itemId: string, amount: number): boolean
-	local def = Items[itemId]
-	if def == nil or not isValidAmount(amount) or DataService.getData(player) == nil then
+-- Cek apakah beberapa item sekaligus muat di tas: { [key] = jumlah }
+function InventoryService.canAddMany(player: Player, items: { [string]: number }): boolean
+	if DataService.getData(player) == nil then
 		return false
 	end
-	return not def.CountsToBag or InventoryService.getFreeSpace(player) >= amount
+	local needed = 0
+	for key, amount in items do
+		local def = ItemKey.def(key)
+		if not ItemKey.isValid(key) or def == nil or not isValidAmount(amount) then
+			return false
+		end
+		if def.CountsToBag then
+			needed += amount
+		end
+	end
+	return InventoryService.getFreeSpace(player) >= needed
+end
+
+function InventoryService.canAdd(player: Player, key: string, amount: number): boolean
+	return InventoryService.canAddMany(player, { [key] = amount })
 end
 
 --[[
 	Tambah item. Ditolak seluruhnya kalau tidak muat (tidak ada tambah sebagian).
 	options.silent = true -> tidak kirim notifikasi "Tas Penuh!"
-	return true kalau item masuk.
 ]]
-function InventoryService.tryAdd(player: Player, itemId: string, amount: number, options: { silent: boolean? }?): boolean
+function InventoryService.tryAdd(player: Player, key: string, amount: number, options: { silent: boolean? }?): boolean
 	local data = DataService.getData(player)
-	if data == nil or Items[itemId] == nil or not isValidAmount(amount) then
+	if data == nil or not ItemKey.isValid(key) or not isValidAmount(amount) then
 		return false
 	end
-	if not InventoryService.canAdd(player, itemId, amount) then
+	if not InventoryService.canAdd(player, key, amount) then
 		if not (options and options.silent) then
 			InventoryService.notifyBagFull(player)
 		end
 		return false
 	end
-	data.Inventory[itemId] = (data.Inventory[itemId] or 0) + amount
+	data.Inventory[key] = (data.Inventory[key] or 0) + amount
 	return true
 end
 
--- Kurangi item kalau jumlahnya cukup. true = berhasil.
-function InventoryService.tryRemove(player: Player, itemId: string, amount: number): boolean
+function InventoryService.tryRemove(player: Player, key: string, amount: number): boolean
 	local data = DataService.getData(player)
-	if data == nil or Items[itemId] == nil or not isValidAmount(amount) then
+	if data == nil or not ItemKey.isValid(key) or not isValidAmount(amount) then
 		return false
 	end
-	local current = data.Inventory[itemId] or 0
+	local current = data.Inventory[key] or 0
 	if current < amount then
 		return false
 	end
-	data.Inventory[itemId] = current - amount
+	local remaining = current - amount
+	-- Item ber-rarity yang habis dihapus dari tabel supaya data tetap kecil
+	if remaining == 0 and ItemKey.rarity(key) ~= nil then
+		data.Inventory[key] = nil
+	else
+		data.Inventory[key] = remaining
+	end
 	return true
 end
 
 -- Kurangi beberapa item sekaligus (mis. bahan crafting). Semua atau tidak sama sekali.
 function InventoryService.tryRemoveMany(player: Player, cost: { [string]: number }): boolean
-	for itemId, amount in cost do
-		if InventoryService.getCount(player, itemId) < amount or not isValidAmount(amount) then
+	for key, amount in cost do
+		if not isValidAmount(amount) or InventoryService.getCount(player, key) < amount then
 			return false
 		end
 	end
-	for itemId, amount in cost do
-		InventoryService.tryRemove(player, itemId, amount)
+	for key, amount in cost do
+		InventoryService.tryRemove(player, key, amount)
 	end
 	return true
 end
 
-game:GetService("Players").PlayerRemoving:Connect(function(player)
+Players.PlayerRemoving:Connect(function(player)
 	lastFullNotify[player] = nil
 end)
 

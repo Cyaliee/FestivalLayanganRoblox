@@ -21,16 +21,19 @@ local Icons: { [string]: IconAsset } = {
 	Upgrade = { Image = "", Fallback = "⬆" },
 	Clock = { Image = "", Fallback = "⏱" },
 	Lock = { Image = "", Fallback = "🔒" },
+	Wallet = { Image = "", Fallback = "👛" },
 }
 
--- Ikon per item. Key = Id di Config/Items.
+-- Ikon per item. Key = Id di Config/Items (item ber-rarity memakai ikon yang sama, warna slot beda).
 local Items: { [string]: IconAsset } = {
 	Bamboo = { Image = "", Fallback = "🎋" },
+	GoldenBamboo = { Image = "", Fallback = "🌟" },
 	Glue = { Image = "", Fallback = "🧴" },
+	SuperGlue = { Image = "", Fallback = "🧪" },
 	Paper = { Image = "", Fallback = "📜" },
-	Cloth = { Image = "", Fallback = "🧵" },
-	KiteBiasa = { Image = "", Fallback = "🪁" },
-	KiteNaga = { Image = "", Fallback = "🐉" },
+	ParachuteCloth = { Image = "", Fallback = "🪂" },
+	Kite = { Image = "", Fallback = "🪁" },
+	Naga = { Image = "", Fallback = "🐉" },
 	Axe = { Image = "", Fallback = "🪓" }, -- slot tool hotbar
 }
 

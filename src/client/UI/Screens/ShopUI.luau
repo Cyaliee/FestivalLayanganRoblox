@@ -1,13 +1,14 @@
 --!strict
 -- Jendela toko/pengepul untuk satu shop (Config/Shops). Beli atau jual tergantung shop.Type.
--- Tombol hanya kirim intent { ItemId, Mode }; harga & jumlah dihitung server.
+-- Tombol hanya kirim intent { ItemKey, Mode }; harga & jumlah dihitung server.
+-- Layangan tampil per rarity (warna baris sesuai rarity).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Items = require(ReplicatedStorage.Shared.Config.Items)
 local UIText = require(ReplicatedStorage.Shared.Config.UIText)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
 local ShopsConfig = require(ReplicatedStorage.Shared.Config.Shops)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 
 local Components = script.Parent.Parent.Components
 local Window = require(Components.Window)
@@ -24,7 +25,7 @@ export type Props = {
 	OnClose: () -> (),
 	Inventory: any, -- { [ItemId]: number } (state)
 	Coins: any, -- number (state)
-	OnTrade: (itemId: string, mode: string) -> (),
+	OnTrade: (itemKey: string, mode: string) -> (),
 	Scale: any?,
 }
 
@@ -32,10 +33,12 @@ local ROW_HEIGHT = 84
 local BUTTON_WIDTH = 116
 
 local function row(scope: any, props: Props, entry: ShopsConfig.ShopItem): Instance
-	local def = Items[entry.ItemId]
+	local key = entry.ItemKey
+	local itemId = ItemKey.parse(key)
+	local tier = ItemKey.rarity(key)
 	local isBuy = props.Shop.Type == "Buy"
 	local owned = scope:Computed(function(use)
-		return use(props.Inventory)[entry.ItemId] or 0
+		return use(props.Inventory)[key] or 0
 	end)
 	local canAfford = scope:Computed(function(use)
 		return use(props.Coins) >= entry.Price
@@ -56,26 +59,26 @@ local function row(scope: any, props: Props, entry: ShopsConfig.ShopItem): Insta
 				return not use(enabled)
 			end),
 			OnActivated = function()
-				props.OnTrade(entry.ItemId, mode)
+				props.OnTrade(key, mode)
 			end,
 		})
 	end
 
 	return ListRow(scope, {
-		Name = entry.ItemId,
+		Name = key,
 		LayoutOrder = entry.Order,
 		Height = ROW_HEIGHT,
-		Palette = props.Shop.Palette,
+		Palette = if tier and tier.Id ~= "Common" then tier.Palette else props.Shop.Palette,
 		Content = Style.children(
 			Icon(scope, {
 				Name = "Icon",
-				Asset = UIAssets.Items[entry.ItemId],
+				Asset = UIAssets.Items[itemId],
 				Size = UDim2.fromScale(1, 1),
 				ZIndex = 3,
 			}),
 			Label(scope, {
 				Name = "NameText",
-				Text = def.DisplayName,
+				Text = ItemKey.displayName(key),
 				Size = UDim2.new(0.45, 0, 0.45, 0),
 				Position = UDim2.fromScale(0.18, 0),
 				TextXAlignment = Enum.TextXAlignment.Left,

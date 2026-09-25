@@ -12,7 +12,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Net = require(ReplicatedStorage.Shared.Net)
-local Items = require(ReplicatedStorage.Shared.Config.Items)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 local HotbarConfig = require(ReplicatedStorage.Shared.Config.Hotbar)
 local NetworkConfig = require(ReplicatedStorage.Shared.Config.Network)
 
@@ -44,7 +44,7 @@ function HotbarController.activateSlot(index: number)
 	if item == nil then
 		return
 	end
-	local def = Items[item.Id]
+	local def = if item.IsTool then nil else ItemKey.def(item.Id)
 	if def and def.Category == "Kite" then
 		-- Aksi sekali: terbangkan, lalu kembali ke pilihan sebelumnya
 		sendEquip(item.Id)

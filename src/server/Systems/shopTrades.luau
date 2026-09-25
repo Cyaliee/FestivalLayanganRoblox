@@ -1,6 +1,6 @@
 --!strict
 --[[
-	Transaksi pasar. Client hanya kirim { ShopId, ItemId, Mode }.
+	Transaksi pasar. Client hanya kirim { ShopId, ItemKey, Mode }.
 	Harga dari Config/Shops, jumlah dihitung server dari Mode:
 	  Beli: One = 1, Bulk = BulkBuyAmount (dibatasi koin & sisa tas)
 	  Jual: One = 1, All = semua yang dimiliki
@@ -10,11 +10,11 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Components = require(ReplicatedStorage.Shared.Components)
-local Items = require(ReplicatedStorage.Shared.Config.Items)
 local ShopsConfig = require(ReplicatedStorage.Shared.Config.Shops)
 local NetworkConfig = require(ReplicatedStorage.Shared.Config.Network)
 local Messages = require(ReplicatedStorage.Shared.Config.Messages)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
+local ItemKey = require(ReplicatedStorage.Shared.Rules.ItemKey)
 
 local Server = script.Parent.Parent
 local DataService = require(Server.Services.DataService)
@@ -39,10 +39,11 @@ local function isNearShop(world, player: Player, shopId: string): boolean
 	return false
 end
 
-local function buy(player: Player, itemId: string, price: number, mode: string)
+local function buy(player: Player, key: string, price: number, mode: string)
+	local def = ItemKey.def(key) :: any
 	local wanted = if mode == "Bulk" then ShopsConfig.BulkBuyAmount else 1
 	local affordable = math.floor(WalletService.getCoins(player) / price)
-	local space = if Items[itemId].CountsToBag then InventoryService.getFreeSpace(player) else wanted
+	local space = if def.CountsToBag then InventoryService.getFreeSpace(player) else wanted
 	local amount = math.min(wanted, affordable, space)
 
 	if affordable <= 0 then
@@ -54,25 +55,25 @@ local function buy(player: Player, itemId: string, price: number, mode: string)
 		return
 	end
 	if WalletService.trySpend(player, amount * price) then
-		if InventoryService.tryAdd(player, itemId, amount) then
-			notify(player, string.format(Messages.Bought, amount, Items[itemId].DisplayName))
+		if InventoryService.tryAdd(player, key, amount) then
+			notify(player, string.format(Messages.Bought, amount, ItemKey.displayName(key)))
 		else
 			WalletService.add(player, amount * price) -- kembalikan (seharusnya tidak terjadi)
 		end
 	end
 end
 
-local function sell(player: Player, itemId: string, price: number, mode: string)
-	local owned = InventoryService.getCount(player, itemId)
+local function sell(player: Player, key: string, price: number, mode: string)
+	local owned = InventoryService.getCount(player, key)
 	local amount = if mode == "All" then owned else 1
 	if owned <= 0 or amount <= 0 then
 		notify(player, Messages.NotEnoughItems)
 		return
 	end
-	if InventoryService.tryRemove(player, itemId, amount) then
+	if InventoryService.tryRemove(player, key, amount) then
 		local earned = amount * price
 		WalletService.add(player, earned)
-		notify(player, string.format(Messages.Sold, amount, Items[itemId].DisplayName, Format.number(earned)))
+		notify(player, string.format(Messages.Sold, amount, ItemKey.displayName(key), Format.number(earned)))
 	end
 end
 
@@ -83,12 +84,12 @@ local function handle(world, player: Player, payload: any)
 	if type(payload) ~= "table" then
 		return
 	end
-	local shopId, itemId, mode = payload.ShopId, payload.ItemId, payload.Mode
-	if type(shopId) ~= "string" or type(itemId) ~= "string" or type(mode) ~= "string" then
+	local shopId, key, mode = payload.ShopId, payload.ItemKey, payload.Mode
+	if type(shopId) ~= "string" or not ItemKey.isValid(key) or type(mode) ~= "string" then
 		return
 	end
 	local shop = ShopsConfig.Shops[shopId]
-	local entry = shop and ShopsConfig.findItem(shop, itemId)
+	local entry = shop and ShopsConfig.findItem(shop, key)
 	if shop == nil or entry == nil or not ShopsConfig.Modes[mode] then
 		return
 	end
@@ -98,9 +99,9 @@ local function handle(world, player: Player, payload: any)
 	end
 
 	if shop.Type == "Buy" and mode ~= "All" then
-		buy(player, itemId, entry.Price, mode)
+		buy(player, key, entry.Price, mode)
 	elseif shop.Type == "Sell" and mode ~= "Bulk" then
-		sell(player, itemId, entry.Price, mode)
+		sell(player, key, entry.Price, mode)
 	end
 end
 

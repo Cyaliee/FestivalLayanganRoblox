@@ -7,6 +7,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Components = require(ReplicatedStorage.Shared.Components)
 local PlotConfig = require(ReplicatedStorage.Shared.Config.Plot)
 local TableConfig = require(ReplicatedStorage.Shared.Config.CraftingTable)
+local Dragon = require(ReplicatedStorage.Shared.Config.Dragon)
 local DataService = require(script.Parent.Parent.Services.DataService)
 local warnOnce = require(script.Parent.Parent.Util.WarnOnce)
 
@@ -31,24 +32,28 @@ local function clampLevel(level: number): number
 	return math.clamp(level, 1, TableConfig.MaxLevel)
 end
 
-local function addPrompt(model: Model): ProximityPrompt?
+local function addPrompt(model: Model, name: string, actionText: string, key: Enum.KeyCode?): ProximityPrompt?
 	local parent = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
 	if parent == nil then
 		warn(`[CraftingTable] {model:GetFullName()} tidak punya BasePart untuk ProximityPrompt`)
 		return nil
 	end
-	local prompt = model:FindFirstChild(TableConfig.PromptName, true)
+	local prompt = model:FindFirstChild(name, true)
 	if prompt == nil or not prompt:IsA("ProximityPrompt") then
 		prompt = Instance.new("ProximityPrompt")
-		prompt.Name = TableConfig.PromptName
+		prompt.Name = name
 		prompt.Parent = parent
 	end
 	local p = prompt :: ProximityPrompt
-	p.ActionText = TableConfig.PromptActionText
+	p.ActionText = actionText
 	p.ObjectText = TableConfig.PromptObjectText
 	p.HoldDuration = TableConfig.PromptHoldDuration
 	p.MaxActivationDistance = TableConfig.InteractDistance
 	p.RequiresLineOfSight = false
+	if key then
+		p.KeyboardKeyCode = key
+		p.UIOffset = Vector2.new(0, 80) -- jangan menumpuk dengan prompt Rakit
+	end
 	return p
 end
 
@@ -69,7 +74,15 @@ local function craftingTables(world)
 		model:SetAttribute(TableConfig.LevelAttribute, level)
 		model.Parent = plot.model
 
-		world:insert(id, CraftingTable({ Level = level, model = model, prompt = addPrompt(model) }))
+		world:insert(
+			id,
+			CraftingTable({
+				Level = level,
+				model = model,
+				prompt = addPrompt(model, TableConfig.PromptName, TableConfig.PromptActionText),
+				dragonPrompt = addPrompt(model, Dragon.PromptName, Dragon.PlaceText, Dragon.PromptKey),
+			})
+		)
 	end
 
 	-- Hapus meja dari kavling yang sudah dilepas
@@ -103,6 +116,14 @@ local function craftingTables(world)
 		end
 		if model:GetAttribute(TableConfig.CraftEndsAtAttribute) ~= endsAt then
 			model:SetAttribute(TableConfig.CraftEndsAtAttribute, endsAt)
+		end
+
+		local dragonPlaced = data.PlacedDragon ~= nil
+		if model:GetAttribute(Dragon.PlacedAttribute) ~= dragonPlaced then
+			model:SetAttribute(Dragon.PlacedAttribute, dragonPlaced)
+			if craftingTable.dragonPrompt then
+				craftingTable.dragonPrompt.ActionText = if dragonPlaced then Dragon.LowerText else Dragon.PlaceText
+			end
 		end
 	end
 end
