@@ -3,7 +3,7 @@
 
 return table.freeze({
 	LevelShort = "Lv %d",
-	LevelCard = "Lvl %d",
+	LevelCard = "Lv %d",
 	ExpShort = "%s / %s",
 	CoinFormat = "Rp. %s",
 	Nametag = "%s | Lv.%d",

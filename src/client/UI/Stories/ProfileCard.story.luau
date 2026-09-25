@@ -26,7 +26,7 @@ return {
 				return "Rp. " .. Format.number(use(c.Money))
 			end),
 			LevelText = scope:Computed(function(use)
-				return "Lvl " .. use(c.Level)
+				return "Lv " .. use(c.Level)
 			end),
 			ExpText = scope:Computed(function(use)
 				return use(c.Exp) .. " / " .. use(c.ExpNeeded)

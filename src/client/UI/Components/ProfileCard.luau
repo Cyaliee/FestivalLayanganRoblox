@@ -1,12 +1,15 @@
 --!strict
--- Kartu profil (kanan bawah): foto avatar bulat, nama, uang, level, dan bar EXP.
+-- Kartu profil gaya Studded (kiri bawah): avatar + lencana level, nama, kapsul uang, bar EXP.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Theme = require(ReplicatedStorage.Shared.Config.UITheme)
 local UIAssets = require(ReplicatedStorage.Shared.Config.UIAssets)
+local Style = require(script.Parent.Parent.Style)
+local Block = require(script.Parent.Block)
 local Label = require(script.Parent.Label)
 local Icon = require(script.Parent.Icon)
+local ProgressBar = require(script.Parent.ProgressBar)
 
 local Children = Fusion.Children
 local Profile = Theme.Profile
@@ -16,7 +19,7 @@ export type Props = {
 	DisplayName: any,
 	UserId: any, -- untuk foto avatar (rbxthumb)
 	MoneyText: any, -- "Rp. 907.345"
-	LevelText: any, -- "Lvl 11"
+	LevelText: any, -- "Lv 11"
 	ExpText: any, -- "193 / 523"
 	ExpProgress: any, -- 0..1
 	AnchorPoint: Vector2?,
@@ -24,17 +27,13 @@ export type Props = {
 	Scale: any?,
 }
 
+local BADGE = 40
+
 return function(scope: any, props: Props): Instance
 	local avatar = Profile.AvatarSize
-	local contentX = avatar + 18
+	local contentX = avatar + 14
+	local panel = Style.palette(Profile.Palette)
 
-	local progress = scope:Spring(
-		scope:Computed(function(use)
-			return math.clamp(use(props.ExpProgress) or 0, 0, 1)
-		end),
-		Anim.BarSpeed,
-		Anim.BarDamping
-	)
 	local bump = scope:Spring(1, Anim.BumpSpeed, Anim.BumpDamping)
 	if type(props.MoneyText) == "table" then
 		scope:Observer(props.MoneyText):onChange(function()
@@ -42,103 +41,92 @@ return function(scope: any, props: Props): Instance
 		end)
 	end
 
-	return scope:New("Frame")({
+	return Block(scope, {
 		Name = "ProfileCard",
 		Size = UDim2.fromOffset(Profile.Width, Profile.Height),
-		AnchorPoint = props.AnchorPoint or Vector2.new(1, 1),
+		AnchorPoint = props.AnchorPoint or Vector2.new(0, 1),
 		Position = props.Position,
-		BackgroundColor3 = Profile.Panel,
-		BackgroundTransparency = Profile.PanelTransparency,
-
-		[Children] = {
-			scope:New("UIScale")({ Scale = props.Scale or 1 }),
-			scope:New("UICorner")({ CornerRadius = UDim.new(0, 18) }),
-
-			-- Foto avatar bulat dengan cincin warna aksen
+		Palette = Profile.Palette,
+		CornerRadius = Theme.Sizes.PanelCorner,
+		Scale = props.Scale,
+		Padding = 10,
+		Content = {
+			-- Avatar bulat dengan outline gelap
 			scope:New("ImageLabel")({
 				Name = "Avatar",
 				Size = UDim2.fromOffset(avatar, avatar),
 				AnchorPoint = Vector2.new(0, 0.5),
-				Position = UDim2.new(0, 6, 0.5, 0),
-				BackgroundColor3 = Profile.TrackColor,
+				Position = UDim2.fromScale(0, 0.5),
+				BackgroundColor3 = Color3.new(1, 1, 1),
+				ZIndex = 3,
 				Image = scope:Computed(function(use)
 					local userId = use(props.UserId) or 1
 					return `rbxthumb://type=AvatarHeadShot&id={userId}&w=150&h=150`
 				end),
 				[Children] = {
-					scope:New("UICorner")({ CornerRadius = UDim.new(1, 0) }),
-					scope:New("UIStroke")({ Color = Profile.Accent, Thickness = 4 }),
+					Style.corner(scope, UDim.new(1, 0)),
+					Style.outline(scope, panel.Dark),
+				},
+			}),
+
+			-- Lencana level menempel di pojok avatar
+			Block(scope, {
+				Name = "LevelBadge",
+				Size = UDim2.fromOffset(BADGE + 16, BADGE - 8),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0, avatar / 2, 1, -6),
+				Palette = Profile.BadgePalette,
+				CornerRadius = UDim.new(1, 0),
+				Studs = false,
+				Padding = 3,
+				ZIndex = 4,
+				Content = {
+					Label(scope, { Name = "LevelText", Text = props.LevelText, ZIndex = 5 }),
 				},
 			}),
 
 			Label(scope, {
 				Name = "NameText",
 				Text = props.DisplayName,
-				TextColor = Profile.Accent,
+				Font = Theme.TitleFont,
 				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = UDim2.new(1, -(contentX + 10), 0, 30),
-				Position = UDim2.fromOffset(contentX, 6),
+				Size = UDim2.new(1, -contentX, 0, 28),
+				Position = UDim2.fromOffset(contentX, 0),
 				MaxTextSize = 28,
+				ZIndex = 3,
 			}),
 
-			scope:New("Frame")({
+			Block(scope, {
 				Name = "Money",
-				Size = UDim2.new(1, -(contentX + 10), 0, 26),
-				Position = UDim2.fromOffset(contentX, 36),
-				BackgroundTransparency = 1,
-				[Children] = {
-					scope:New("UIScale")({ Scale = bump }),
+				Size = UDim2.new(1, -contentX, 0, 30),
+				Position = UDim2.fromOffset(contentX, 32),
+				Palette = Profile.MoneyPalette,
+				CornerRadius = UDim.new(1, 0),
+				Scale = bump,
+				Padding = 3,
+				Content = {
 					Icon(scope, {
 						Asset = UIAssets.Icons.Wallet,
-						Size = UDim2.fromOffset(26, 26),
+						Size = UDim2.fromScale(1, 1),
+						ZIndex = 5,
 					}),
 					Label(scope, {
 						Name = "MoneyText",
 						Text = props.MoneyText,
-						TextColor = Profile.Money,
 						TextXAlignment = Enum.TextXAlignment.Left,
-						Size = UDim2.new(1, -32, 1, 0),
-						Position = UDim2.fromOffset(32, 0),
-						MaxTextSize = 24,
+						Size = UDim2.new(1, -30, 1, 0),
+						Position = UDim2.fromOffset(28, 0),
+						ZIndex = 5,
 					}),
 				},
 			}),
 
-			Label(scope, {
-				Name = "LevelText",
-				Text = props.LevelText,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = UDim2.new(0.4, 0, 0, 18),
-				Position = UDim2.fromOffset(contentX, 64),
-				MaxTextSize = 18,
-			}),
-			Label(scope, {
-				Name = "ExpText",
-				Text = props.ExpText,
-				TextXAlignment = Enum.TextXAlignment.Right,
-				Size = UDim2.new(1, -(contentX + 12), 0, 18),
-				Position = UDim2.fromOffset(contentX, 64),
-				MaxTextSize = 18,
-			}),
-
-			scope:New("Frame")({
+			ProgressBar(scope, {
 				Name = "ExpBar",
-				Size = UDim2.new(1, -(contentX + 12), 0, 10),
-				Position = UDim2.fromOffset(contentX, 84),
-				BackgroundColor3 = Profile.TrackColor,
-				[Children] = {
-					scope:New("UICorner")({ CornerRadius = UDim.new(1, 0) }),
-					scope:New("Frame")({
-						Name = "Fill",
-						Size = scope:Computed(function(use)
-							return UDim2.fromScale(math.max(use(progress), 0), 1)
-						end),
-						BackgroundColor3 = Profile.Accent,
-						[Children] = {
-							scope:New("UICorner")({ CornerRadius = UDim.new(1, 0) }),
-						},
-					}),
-				},
+				Progress = props.ExpProgress,
+				Text = props.ExpText,
+				Size = UDim2.new(1, -contentX, 0, 24),
+				Position = UDim2.fromOffset(contentX, 66),
 			}),
 		},
 	})

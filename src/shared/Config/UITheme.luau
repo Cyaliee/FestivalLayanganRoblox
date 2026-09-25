@@ -68,16 +68,14 @@ return table.freeze({
 		UpgradeWindow = "Orange",
 	}),
 
-	-- Kartu profil (kanan bawah)
+	-- Kartu profil (kiri bawah), gaya Studded
 	Profile = table.freeze({
-		Accent = rgb(26, 196, 190),
-		Panel = rgb(20, 24, 30),
-		PanelTransparency = 0.35,
-		Money = rgb(255, 206, 60),
-		TrackColor = rgb(40, 48, 56),
-		Width = 290,
-		Height = 96,
-		AvatarSize = 84,
+		Palette = "Teal", -- warna panel
+		BadgePalette = "Gold", -- lencana level
+		MoneyPalette = "Coin", -- kapsul uang
+		Width = 300,
+		Height = 112,
+		AvatarSize = 88,
 	}),
 
 	-- Tekstur stud dari kit StuddedUI

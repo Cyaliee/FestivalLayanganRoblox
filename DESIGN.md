@@ -48,5 +48,5 @@ Diacak di **server** saat crafting selesai (bukan saat tombol ditekan).
 Efek menumpuk (dikali): VIP + X2 EXP = 4x EXP. Luck memengaruhi rarity & drop Bambu Emas, tidak memengaruhi Naga.
 
 ## UI
-- Kartu profil kanan bawah: avatar, nama, `Rp. <koin>`, `Lvl N`, EXP bar.
+- Kartu profil kiri bawah (gaya Studded): avatar + lencana level, nama, kapsul `Rp. <koin>`, EXP bar.
 - Nametag `DisplayName | Lv.xxx` menggantikan nama bawaan Roblox.

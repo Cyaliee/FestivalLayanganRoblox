@@ -32,7 +32,7 @@ Primary = { Image = "rbxassetid://123", SliceCenter = Rect.new(24, 24, 104, 104)
 | `Colors` | teks, outline teks, backdrop |
 | `Palettes` | `{ Surface, Dark }` — warna dari kit (Red, Green, Blue, Cyan, Teal, Orange, Gold, Purple, Pink, ...) |
 | `Roles` | warna per fungsi: tombol utama, koin, bambu, tas, tas penuh, slot, jendela upgrade, ... |
-| `Profile` | kartu profil kanan bawah: warna aksen (teal), panel, uang, ukuran avatar |
+| `Profile` | kartu profil kiri bawah: palette panel, lencana level, kapsul uang, ukuran |
 | `Studs` | tekstur stud (asset dari kit), ukuran tile, transparansi di tombol & jendela |
 | `Sizes` | tebal outline, radius sudut, tinggi bayangan, ukuran pill/slot/toast |
 | `Animation` | skala hover/tekan, kecepatan & damping spring, posisi toast |

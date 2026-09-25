@@ -1,5 +1,5 @@
 --!strict
--- HUD: kapsul Bambu / Layangan / Tas (kiri atas), kartu profil (kanan bawah), notifikasi (atas).
+-- HUD: kapsul Bambu / Layangan / Tas (kiri atas), kartu profil (kiri bawah), notifikasi (atas).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
@@ -86,8 +86,8 @@ return function(scope: any, props: Props): Instance
 				LevelText = props.LevelCardText,
 				ExpText = props.ExpShortText,
 				ExpProgress = props.ExpProgress,
-				AnchorPoint = Vector2.new(1, 1),
-				Position = UDim2.new(1, -Sizes.ScreenMargin, 1, -Sizes.ScreenMargin),
+				AnchorPoint = Vector2.new(0, 1),
+				Position = UDim2.new(0, Sizes.ScreenMargin, 1, -(Sizes.ScreenMargin + Sizes.ShadowOffset)),
 				Scale = props.Scale,
 			}),
 
